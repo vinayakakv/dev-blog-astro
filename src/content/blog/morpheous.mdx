@@ -35,11 +35,11 @@ solution has a lot of drawbacks:
 
 - The script is not reusable, as it is built for a specific customer
 - With every new customer coming in, there is a lot of engineering work to do
-to create a new script for them
+  to create a new script for them
 - If the data format changes in between, the script may require a lot of changes
 - The script has to contain the data validatation logic and must be able to
-handle API failures. Otherwise, the program would crash somewhere in between,
-only to fix the problems and run it again
+  handle API failures. Otherwise, the program would crash somewhere in between,
+  only to fix the problems and run it again
 
 In this article, we shall explore how I built a simple solution to handle these
 problems, with a scope to easily extend it.
@@ -53,18 +53,18 @@ problem, there were already a few established SaaS companies providing a
 solution for it.
 
 - [FlatFile](https://flatfile.com/) is an excellent tool to onboard business
-customers. Their offerings range from providing an interactive UI to
-collaborate with the customers to custom NodeJS to transform the fields of the
-data.
+  customers. Their offerings range from providing an interactive UI to
+  collaborate with the customers to custom NodeJS to transform the fields of the
+  data.
 
 - [OneSchema](https://www.oneschema.co/) operates in the same business area as
-the FlatFile. Their solution offers an easy way to clean the data and export
-the rows with errors and share them with the customer. On another end, they
-also support transforming the data and handling ingestion and incremental
-updates.
+  the FlatFile. Their solution offers an easy way to clean the data and export
+  the rows with errors and share them with the customer. On another end, they
+  also support transforming the data and handling ingestion and incremental
+  updates.
 - [CSVBox](https://csvbox.io/): CSVBox is a simple solution to map the columns
-in the input spreadsheet to a defined schema. Although googling "Flatfile
-alternative" brings them to the top, they are not quite there yet!
+  in the input spreadsheet to a defined schema. Although googling "Flatfile
+  alternative" brings them to the top, they are not quite there yet!
 
 After exploring some other solutions such as [Dromo](https://www.dromo.io/), I
 decided to go with a custom solution.
@@ -72,7 +72,7 @@ decided to go with a custom solution.
 ## The Solution
 
 The solution was named _Morpheus_ after a ["Matrix"
-character](https://en.wikipedia.org/wiki/Morpheus_(The_Matrix)) and the [Greek
+character](<https://en.wikipedia.org/wiki/Morpheus_(The_Matrix)>) and the [Greek
 god of dreams](https://en.wikipedia.org/wiki/Morpheus). The interesting part of
 the word was "morph" -- to transform, which the project would do the
 spreadsheet input data.
@@ -89,19 +89,19 @@ files to the APIs. The challenge comes here with the references between the
 entities. To give a concrete example, let's assume the following scenario:
 
 - We have `Student` and `Course` resources, where multiple `Student`s can take
-a single `Course`
+  a single `Course`
 - The backend generates UUIDs for the `Student` and `Course` resources and uses
-them as the primary keys
+  them as the primary keys
 - The endpoint `POST /api/course`, takes a JSON body field `students`, an array
-of UUIDs corresponding to `Student` resources.
+  of UUIDs corresponding to `Student` resources.
 - The endpoint `GET /api/student` has a query parameter `search`, which takes a
-string of `[field1: value1][field2: value2]` format, returning the matching
-resources.
+  string of `[field1: value1][field2: value2]` format, returning the matching
+  resources.
 
 We do not know the UUID of the `Student` resource until it is present in the
 backend; thus, it JSON input file has to contain some other _unique_ field of
 the student. Then, the code must call the `GET` endpoint, and return the UUID
-of the resource. 
+of the resource.
 
 To handle such scenarios, I created a `Model` class in the code, responsible
 for keeping track of dependencies and resolving them. The class looked like,
@@ -122,7 +122,7 @@ class Model {
       getEndpoint: string
       postEndpoint: string
       references: Reference[]
-    }
+    },
   ) {
     // initialize all properties
   }
@@ -140,7 +140,6 @@ class Model {
     // the returned object can be used in `createOne()`
   }
 }
-
 ```
 
 The `getOne()` method converts `SearchParams` into a string in the format of
@@ -177,7 +176,6 @@ const course = new Model("Course", {
     },
   ],
 })
-
 ```
 
 Now, we can start importing the objects. Let's say we have the following data.
@@ -221,17 +219,14 @@ const courses = [
     ],
   },
 ]
-
 ```
 
-Creating the students is straightforward. We call `student.createOne()` for 
+Creating the students is straightforward. We call `student.createOne()` for
 all student objects.
 
 ```typescript
 await Promise.all(
-  students.map(studentObject =>
-    student.createOne(studentObject)
-  )
+  students.map((studentObject) => student.createOne(studentObject)),
 )
 ```
 
@@ -239,16 +234,14 @@ Before creating the courses, however, we need to resolve student IDs.
 
 ```typescript
 const resolvedCourses = await Promise.all(
-  courses.map(courseObject =>
-    course.resolveDependencies(courseObject)
-  )
+  courses.map((courseObject) => course.resolveDependencies(courseObject)),
 )
 ```
 
 The `resolvedCourses` looks like
 
 ```typescript
-[
+;[
   {
     name: "Intro to CS",
     id: "CS101",
@@ -266,15 +259,13 @@ Now, we can import the `resolvedCourses` as usual.
 
 ```typescript
 await Promise.all(
-  resolvedCourses.map(courseObject =>
-    course.createOne(courseObject)
-  )
+  resolvedCourses.map((courseObject) => course.createOne(courseObject)),
 )
 ```
 
 > **Note**: The `Model` class takes only care of handling references, creating
-and getting objects. It is _still_ your responsibility to ensure that other
-fields are valid.
+> and getting objects. It is _still_ your responsibility to ensure that other
+> fields are valid.
 
 ### Transformer
 
@@ -285,11 +276,11 @@ please bear with me :sweat_smile:), the Transformer would look as follows:
 
 ```typescript
 const studentTransformer = new Transformer()
-  .field("name", data => data["Student Name"])
-  .field("email", async data =>
+  .field("name", (data) => data["Student Name"])
+  .field("email", async (data) =>
     fetch(`https://uni.edu/api/email?name=${data["name"]}`)
-      .then(response => response.json())
-      .then(res => res.name)
+      .then((response) => response.json())
+      .then((res) => res.name),
   )
   .input("student.xlsx", { sheet: "names" })
   .output("student.json")
@@ -309,7 +300,6 @@ type DataRow = Record<string, string>
 type Output<T> = T | Promise<T>
 
 type FieldAction<T> = (dataRow: DataRow) => Output<T>
-
 ```
 
 When working with real data, I came across the need of skipping some rows based
@@ -339,15 +329,13 @@ transformer for `Course`:
 
 ```typescript
 const courseTransformer = new Transformer()
-  .groupBy(data => [data["Course ID"]], ["students"])
-  .field("name", data => data["Course Name"])
-  .field("id", data => data["Course ID"])
-  .field("students", async data => ({
-    email: await fetch(
-      `https://uni.edu/api/email?name=${data["name"]}`
-    )
-      .then(response => response.json())
-      .then(res => res.name),
+  .groupBy((data) => [data["Course ID"]], ["students"])
+  .field("name", (data) => data["Course Name"])
+  .field("id", (data) => data["Course ID"])
+  .field("students", async (data) => ({
+    email: await fetch(`https://uni.edu/api/email?name=${data["name"]}`)
+      .then((response) => response.json())
+      .then((res) => res.name),
   }))
   .input("courses.xlsx", { sheet: "course" })
   .output("courses.json")
@@ -414,7 +402,7 @@ further fed into the tool, or, sent back to the customer for clarifications.
 This project had a huge impact on customer onboarding. Specifically, it
 
 - reduced the amount of work required to onboard a customer, from creating a
-project to writing several functions
+  project to writing several functions
 - decreased the customer onboarding time from weeks to days
 - increased the visibility into the errors during processing and import
 
@@ -432,4 +420,3 @@ requirements, and communicate them with all the stakeholders. Apart from
 coding, I was involved with documenting the project and gathering feedback from
 other developers regarding code quality and interface usability, from which I
 was able to understand the project from different perspectives.
-

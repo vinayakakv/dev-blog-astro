@@ -29,7 +29,7 @@ tldr: |
   - This exercise made us think about code architecture a little bit - while we
   already benefit greatly from monorepo, can we have a monolith and generate
   microservice bundles? I will explore this at length in my next article.
-  
+
 categories:
   - slug: infra
     title: Infrastructure
@@ -48,7 +48,7 @@ of incoming data. Our main data receiver services put the messages into
 RabbitMQ, which our microservice in question consumes. Our microservice is
 written in NodeJS and we do not have the luxury of multi-threading (we have
 Worker Threads, but we wanted to keep things simple). Thus, we saturate the CPU
-during the loads to keep things optimized, resulting in near 100% utilization. 
+during the loads to keep things optimized, resulting in near 100% utilization.
 
 There is a solution for this problem in k8s - Horizontal Pod Autoscalar (HPA),
 which watches a deployment and scales it up and down to keep a target metric
@@ -63,7 +63,7 @@ to begin with as the UI and the APIs serving it were working fine. For the
 first few days, the solution to clear the page was to wake up, visit the UI in
 the browser, and, hit refresh 5-6 times! This problem had to be solved.
 
-## Digging Deep 
+## Digging Deep
 
 Since we knew that the 500s problem started after we configured the HPA, we
 knew it had to do something with it. We began digging it up in a lower
@@ -135,13 +135,13 @@ while the frontend traffic is predictable and steady. Thus, we can have two
 sets of pods
 
 1. To serve frontend traffic - with a constant number of replicas and behind a
-service and exposed through Ingress
+   service and exposed through Ingress
 2. To serve data processing needs - with a HPA, not exposed to the public
 
 This was an easy solution for us as all our data processing inputs came through
 MQ, and we had a `listenToMqMessages` function to set up the listeners. If we
 ever had an API to handle data ingestion, we would simply write a message to MQ
-in the API. 
+in the API.
 
 In Kubernetes, we can't have a single deployment serving both needs. So, we
 created a `service-noweb` deployment that sets an environment variable
@@ -189,4 +189,3 @@ having to set up package publishing infrastructure. Instead of monorepo, what
 if we had a monolith with some rules about code organization, that generates
 several microservice bundles? I will be processing this thought for some time
 and will come up with an article soon .... Stay tuned!
-

@@ -39,28 +39,28 @@ def concatStrings(strings: Seq[String], separator: String): String = {
 Several things are going on here, let's break them down one by one:
 
 - Scala uses `[]` to denote generics; thus, `Seq[String]` is a `Seq` of
-`String`s
+  `String`s
 
 - The return value is the value of the last line of the function; writing
-`return` is optional
+  `return` is optional
 
 - `foldRight` is similar to `reduce` function in JS, its first argument is the
-initial value `""`
+  initial value `""`
 
 - `foldRight` takes a reducer function as a
-[_curried_](https://docs.scala-lang.org/tour/multiple-parameter-lists.html)
-argument
+  [_curried_](https://docs.scala-lang.org/tour/multiple-parameter-lists.html)
+  argument
 
 - The reducer function is of type `(String, B) => B`, The type `B` comes from
-the initial value, which is also `String` now
+  the initial value, which is also `String` now
 
 - The funny `_`s are a shorthand to access function arguments; the First `_` is
-of type `String`, and the second `_` is of type `B` (= `String`). You can't
-write a third `_`,  that's an error :sweat_smile:
+  of type `String`, and the second `_` is of type `B` (= `String`). You can't
+  write a third `_`, that's an error :sweat_smile:
 
 - `{...}` is a shorthand for the funciton body, otherwise you would have
-written `strings.foldRight("")((a, b) => a + separator + b)`; Notice two set of
-arguments `foldRight()()`, don't worry, we will address it right away :smile:
+  written `strings.foldRight("")((a, b) => a + separator + b)`; Notice two set of
+  arguments `foldRight()()`, don't worry, we will address it right away :smile:
 
 Then, we invoke this function and get a return value from anywhere.
 
@@ -174,7 +174,7 @@ object ImplicitHelper {
 
 object Main {
   implicit val delimiter: String = "+"
-  
+
   def main(args: Array[String]): Unit = {
     val strings = Seq("Hello", "World")
     val result = ImplicitHelper.concatStrings(strings)
@@ -277,7 +277,7 @@ Docs](https://docs.scala-lang.org/tour/implicit-conversions.html), we need
 this,
 
 > Because implicit conversions can have pitfalls if used indiscriminately the
-compiler warns when compiling the implicit conversion definition.
+> compiler warns when compiling the implicit conversion definition.
 
 So, we are making it explicit that we are using implicit conversions :smile:
 (BTW, conversion = function).
@@ -297,7 +297,7 @@ object setting delimiter to `","`, and a `SpecialConfig` object setting it to
 3. `DefaultConfig.scala`, and
 4. `SpecialConfig.scala` -- as defined earlier
 
-Now, 
+Now,
 
 ```scala
 // DefaultConfig.scala
@@ -350,10 +350,10 @@ object Main {
     val result = concatStrings(strings)
     assert(result == "Hello+World+")
   }
-}	
+}
 ```
 
-  And, the import order does not matter.
+And, the import order does not matter.
 
 ## Concluding Thoughts
 

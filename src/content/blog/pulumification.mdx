@@ -91,13 +91,13 @@ code, it takes some time to understand HCL code and get used to its syntax. I
 preferred general-purpose programming languages for IaC for a few reasons:
 
 1. Developers can write IaC in the language that they are used to write
-applications, this eliminates the need to learn a new language
+   applications, this eliminates the need to learn a new language
 2. A developer with sufficient knowledge can maintain the IaC codebase; no need
-to have dedicated personnel for this
+   to have dedicated personnel for this
 3. One can use the _best practices_ of the programming language to organize the
-code, such as refactoring into modules, etc.
+   code, such as refactoring into modules, etc.
 4. In some cases, debugging IaC is also possible by using common debuggers by
-stepping into the code and inspecting variables!
+   stepping into the code and inspecting variables!
 
 When I saw a [Fireship
 video](https://www.youtube.com/watch?v=tomUWcQ0P3k&lc=UgxQFl_FF5yB0bKhXF14AaABAg&ab_channel=Fireship)
@@ -116,13 +116,13 @@ well!](https://www.pulumi.com/blog/pulumi-universal-iac)), I chose to go ahead
 with TypeScript + NodeJS for Pulumi for a few reasons:
 
 - Project management with `npm` is easy, it just takes doing `npm install` to
-set up the project on a new machine
+  set up the project on a new machine
 - At that time, Pulumi's [`awsx`](https://www.npmjs.com/package/@pulumi/awsx)
-and [`eks`](https://www.npmjs.com/package/@pulumi/eks) packages were only
-available on `npm`; more about them later!
+  and [`eks`](https://www.npmjs.com/package/@pulumi/eks) packages were only
+  available on `npm`; more about them later!
 - Going with TypeScript over JavaScript is natural, due to the benefits offered
-by static type checking. Plus, Pulumi's packages are also in TypeScript,
-providing excellent typing support.
+  by static type checking. Plus, Pulumi's packages are also in TypeScript,
+  providing excellent typing support.
 
 ## The Highlights
 
@@ -132,10 +132,10 @@ illustration purposes.
 
 - VPC with public and private subnets, replicated for production and staging
 - An EC2 jumpbox VM in the public subnet of staging VPC, which is in its own
-security group
+  security group
 - VPC peering connection between production and staging VPCs
 - An RDS instance placed in the private subnet of the VPC, with connections
-allowed from the jumpbox machine, replicated for production and staging
+  allowed from the jumpbox machine, replicated for production and staging
 
 ### Stacks, Outputs, and References
 
@@ -148,7 +148,7 @@ Architecture](https://www.pulumi.com/registry/packages/aws/how-to-guides/aws-ts-
 
 We can break down our architecture into `network` and `database` units, with
 `stage` and `prod` environments. We shall use `<unit>.<env>` syntax to name the
-stacks. Each unit sits in its own repository and has a separate stack file. 
+stacks. Each unit sits in its own repository and has a separate stack file.
 
 Let's focus on the jumpbox in the `network.stage` stack. Since we want the RDS
 to be accessible from the jumobox, we export its security group ID as the stack
@@ -159,29 +159,26 @@ output.
 import * as aws from "@pulumi/aws"
 
 function createJumpbox(name: string) {
-  const securityGroup = new aws.ec2.SecurityGroup(
-    `${name}-sg`,
-    {
-      ingress: [
-        {
-          cidrBlocks: ["0.0.0.0/0"],
-          fromPort: 22,
-          toPort: 22,
-          protocol: "tcp",
-          description: "Allow SSH connection",
-        },
-      ],
-      egress: [
-        {
-          cidrBlocks: ["0.0.0.0/0"],
-          fromPort: 0,
-          toPort: 0,
-          protocol: "all",
-          description: "Allow all outgoing connections",
-        },
-      ],
-    }
-  )
+  const securityGroup = new aws.ec2.SecurityGroup(`${name}-sg`, {
+    ingress: [
+      {
+        cidrBlocks: ["0.0.0.0/0"],
+        fromPort: 22,
+        toPort: 22,
+        protocol: "tcp",
+        description: "Allow SSH connection",
+      },
+    ],
+    egress: [
+      {
+        cidrBlocks: ["0.0.0.0/0"],
+        fromPort: 0,
+        toPort: 0,
+        protocol: "all",
+        description: "Allow all outgoing connections",
+      },
+    ],
+  })
   const vm = new aws.ec2.Instance(name, {
     ami: "<add-some-ami-here>",
     instanceType: "t3.medium",
@@ -195,7 +192,6 @@ const { securityGroup, vm } = createJumpbox("jumpbox")
 
 // Export the security group ID as the stack output
 export const jumpboxSecurityGroupId = securityGroup.id
-
 ```
 
 On the `database` unit, to allow _only_ the connections from jumpbox at port
@@ -208,19 +204,14 @@ import * as pulumi from "@pulumi/pulumi"
 import * as aws from "@pulumi/aws"
 
 // If we are in the stack `db.stage`, environment is `stage`
-const getEnvironment = () => pulumi
-  .getStack()
-  .split(".")
-  .slice(-1)[0]
+const getEnvironment = () => pulumi.getStack().split(".").slice(-1)[0]
 
 const environment = getEnvironment()
 // Create a Stack Reference to the `network` stack in the same environment
-const networkStack = new pulumi.StackReference(
-  `network.${environment}`
-)
+const networkStack = new pulumi.StackReference(`network.${environment}`)
 // Get the jumpbox security group ID
 const jumpboxSecurityGroupId = networkStack.requireOutput(
-  "jumpboxSecurityGroupId"
+  "jumpboxSecurityGroupId",
 ) as pulumi.Output<string>
 // Create Security group and allow incoming connection from jumpbox security
 group
@@ -231,8 +222,7 @@ const securityGroup = new aws.ec2.SecurityGroup("db-sg", {
       fromPort: 5432,
       toPort: 5432,
       protocol: "tcp",
-      description:
-        "Allow incoming connection from jumpbox at port 5432",
+      description: "Allow incoming connection from jumpbox at port 5432",
     },
   ],
 })
@@ -242,7 +232,6 @@ const rdsInstance = new aws.rds.Instance("db", {
   vpcSecurityGroupIds: [securityGroup.id],
   // Associate subnet group etc
 })
-
 ```
 
 The `requireOutput()` method of the `StackReference` class is the key here.
@@ -250,7 +239,7 @@ Using the stack reference pattern, one can easily split a large infrastructure
 into smaller _units_ and link them.
 
 > **Note**: When using the stack reference, if the output of a stack changes,
-we have to update other stacks manually by selecting the stack `pulumi stack
+> we have to update other stacks manually by selecting the stack `pulumi stack
 select <stack name>` and `pulumi update.
 >
 > Sometimes, not doing so might break the things elsewhere.
@@ -276,24 +265,16 @@ let securityGroupId = null
 
 if (isStaging) {
   // Function createJumpbox() defined in earlier example
-  const { securityGroup: jumpboxSecurityGroupId, vm } =
-    createJumpbox("jumpbox")
+  const { securityGroup: jumpboxSecurityGroupId, vm } = createJumpbox("jumpbox")
   securityGroupId = jumpboxSecurityGroupId.id
 } else {
-  const stagingEnvironment = new pulumi.StackReference(
-    "network.stage"
-  )
+  const stagingEnvironment = new pulumi.StackReference("network.stage")
   // Create VPC peering
-  securityGroupId = stagingEnvironment.requireOutput(
-    "jumpboxSecurityGroupId"
-  )
+  securityGroupId = stagingEnvironment.requireOutput("jumpboxSecurityGroupId")
 }
 
 export const jumpboxSecurityGroupId = securityGroupId
-
 ```
-
-
 
 ### Config File, Secrets
 
@@ -326,10 +307,7 @@ const config = new pulumi.Config()
 
 const instanceType = config.require("jumpboxInstanceType")
 
-function createJumpbox(
-  name: string,
-  args: { instanceType: string }
-) {
+function createJumpbox(name: string, args: { instanceType: string }) {
   const { instanceType } = args
   // same as above
   // const securityGroup =
@@ -374,9 +352,9 @@ const config = new pulumi.Config()
 const secretValue = config.requireSecret("secretTest")
 
 // secretValue is pulumi.Output<any>, so we log it once we have a value for it
-secretValue.apply(value => {
-    console.log(value)
-    pulumi.log.debug(value)
+secretValue.apply((value) => {
+  console.log(value)
+  pulumi.log.debug(value)
 })
 
 export const secretOutput = secretValue
@@ -388,12 +366,12 @@ the plain string, it is not printable. The log statements above just print
 even in the state file!
 
 > **Note**: Although Pulumi ensures that the secret value is not stored in
-plaintext from its side, it is still your responsibility to store them securely
-on the cloud side.
+> plaintext from its side, it is still your responsibility to store them securely
+> on the cloud side.
 >
 > As an example, let's say we are using an API key as an environment variable
-to AWS Lambda. While we can store the API key as a secret in Pulumi config, it
-is still viewable plaintext at Lambda-side. 
+> to AWS Lambda. While we can store the API key as a secret in Pulumi config, it
+> is still viewable plaintext at Lambda-side.
 
 ### Crosswalk Packages
 
@@ -406,29 +384,28 @@ access, the creation of the same using `@pulumi/awsx` package is as simple as,
 
 ```typescript
 // network/index.ts
-import * as awsx from "@pulumi/awsx";
+import * as awsx from "@pulumi/awsx"
 
-type SubnetArgs = awsx.ec2.VpcSubnetArgs;
+type SubnetArgs = awsx.ec2.VpcSubnetArgs
 
-const publicSubnetCount = 2;
-const privateSubnetCount = 2;
+const publicSubnetCount = 2
+const privateSubnetCount = 2
 
 // Returns array with n elements
-const range = (n: number) => [...Array(n).keys()];
+const range = (n: number) => [...Array(n).keys()]
 
-const publicSubnets: SubnetArgs[] = range(
-  publicSubnetCount
-).map(() => ({ type: "public" }));
-const privateSubnets: SubnetArgs[] = range(
-  privateSubnetCount
-).map(() => ({ type: "private" }));
+const publicSubnets: SubnetArgs[] = range(publicSubnetCount).map(() => ({
+  type: "public",
+}))
+const privateSubnets: SubnetArgs[] = range(privateSubnetCount).map(() => ({
+  type: "private",
+}))
 
 const vpc = new awsx.ec2.Vpc("vpc", {
   cidrBlock: "10.0.0.0/16",
   subnets: [...publicSubnets, ...privateSubnets],
   numberOfNatGateways: 1,
-});
-
+})
 ```
 
 ### Lambda Magic
@@ -441,16 +418,15 @@ concrete example, we can listen to an event on an S3 bucket by writing a
 callback function in the IaC.
 
 ```typescript
-import * as aws from "@pulumi/aws";
+import * as aws from "@pulumi/aws"
 
-const bucket = new aws.s3.Bucket("media-bucket");
+const bucket = new aws.s3.Bucket("media-bucket")
 
 bucket.onObjectCreated("bucketEvent", (args) => {
-  console.log("Got ObjectCreated event");
+  console.log("Got ObjectCreated event")
   // You can do something useful with args
   // This will be executed in the Lamdba
-});
-
+})
 ```
 
 Such functionality is available for a variety of event sources. I implemented
@@ -466,37 +442,37 @@ I defined and followed while writing the IaC:
 
 - Stack names should follow the `projectName.environment` syntax.
   - `orgName/projectName` is not supported in the S3 backend, thus this naming
-convention.
+    convention.
   - Thanks [@briggsl](https://twitter.com/briggsl) for pointing that out!
 
 - Every source file should be under the `src/` directory. By default, Pulumi's
-`aws-typescript` template creates `index.ts` in the project root.
+  `aws-typescript` template creates `index.ts` in the project root.
 - No resource should be directly created in `index.ts`, which is not directly
-relevant to the main resource that the stack creates. They should be rather
-refactored into `resource.ts` exporting `createResource()` function.
+  relevant to the main resource that the stack creates. They should be rather
+  refactored into `resource.ts` exporting `createResource()` function.
   - If the resource creation takes only one call, it can still be in the
-`index.ts`, as there is no point in wrapping it with other function.
+    `index.ts`, as there is no point in wrapping it with other function.
   - Mostly, these were related to IAM; Creating roles and policies were
-refactored into a separate file.
+    refactored into a separate file.
 - No function should decide the resource name on its own, rather it should be
-passed top-down from `index.ts`.
+  passed top-down from `index.ts`.
   - This makes it easy to follow the path from which a resource is coming.
   - The functions can prepend some identifier to the name while passing it to
-sub-functions
+    sub-functions
   - The name should be the first argument of the function, for example,
-`createResource(name, args)`. This is in line with Pulumi's convention of
-creating resources.
+    `createResource(name, args)`. This is in line with Pulumi's convention of
+    creating resources.
 - No hard-coded values in the code, they should be rather in the config.
   - The config values are stored under an object, whose type is declared in the
-`index.ts` as `ProjectConfig`.
+    `index.ts` as `ProjectConfig`.
   - Then, one can use `config.requireObject<ProjectConfig>("projectConfig")` to
-retrieve the config.
+    retrieve the config.
   - No other file than `index.ts` should read the config! This would make it
-easy to track the flow of the config values.
+    easy to track the flow of the config values.
 - No call to `Config.getX()` and `StackReference.getOutput()` methods!
   - These methods will silently return an empty value if the key is not present
   - The `require` methods are rather strict and will throw an exception if the
-key is not present, thus, eliminating a few errors
+    key is not present, thus, eliminating a few errors
 
 ## CI/CD for the Infra
 
@@ -509,17 +485,17 @@ deploying infrastructure changes. The rules of the pipeline looked as:
   - `preview`, to preview infrastructure changes
   - `deploy`, to deploy the changes
 - `deploy` is only available for the `main` branch, and contains manually
-triggered jobs
+  triggered jobs
 - After `deploy` is complete, a Slack notification is triggered
 - There can be multiple jobs in the `preview` and `deploy` stages, depending on
-the environments
+  the environments
 
 Then, the developer workflow would be:
 
 - Create a branch for proposed infrastructure changes
 - Commit and push the code, verify if changes look OK
 - Start a PR, the reviewer looks at the code _along with_ the `preview` job
-output to ensure nothing is breaking
+  output to ensure nothing is breaking
 - Once the PR is accepted and merged, a maintainer can trigger `deploy`
 - Team is notified on Slack about new changes :tada:
 

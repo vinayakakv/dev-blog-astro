@@ -4,7 +4,7 @@ title: "Exploring NextJS ISR"
 description: "How I used NextJS' Incremental Static Regeneration in our static e-commerce website and built a GraphCMS extension to trigger it"
 date: "2022-05-23"
 tldr: |
-  
+
   - I implemented Incremental Static Regeneration (ISR) for an [e-commerce
   website](https://benakastores.com) that I built using NextJS
   - To trigger ISR, I built a GraphCMS [UI
@@ -59,15 +59,15 @@ Hygraph, as the price editing happens there. I imagined the following workflow:
 1. Update the price in Hygraph
 2. Publish the content
 3. Click a button somewhere in the Hygraph content editor to trigger ISR on the
-pages affected
+   pages affected
 
 Thanks to the Hygraph [UI Extensions](https://hygraph.com/docs/ui-extensions)
-(UIX, currently in preview), which enhances its UI functionality,  this
+(UIX, currently in preview), which enhances its UI functionality, this
 workflow was possible. I decided to use them with the following mechanism:
 
 - The website provides a `POST` endpoint (say `/api/revalidate`) to trigger ISR
 - The UIX provides a button, on clicking which, calls the endpoint with the
-current object data in the body
+  current object data in the body
 
 ### Building the Hygraph UIX
 
@@ -136,7 +136,7 @@ I also added several state variables to the skeleton:
 - A boolean state variable `dirty` to check if the form had been modified
 
 - An object state variable `values` to store the value of the current object
-being edited in Hygraph
+  being edited in Hygraph
 
 - An effect depending on the `form` to update `dirty` and `values`
 
@@ -145,17 +145,15 @@ being edited in Hygraph
 - A boolean state variable `loading` set true if an API call is in progress
 
 - A string state variable `message` to notify the user of the result of the API
-call.
+  call.
 
 The UI was very simple, containing a button to trigger the callback, and a
 paragraph to display the `message`. In the end, the UIX config looked like
 this:
 
-
 ![image-20220522165055642.png](https://media.graphassets.com/AAI8aBp6S3mbfIzUJ5rf)
 
 The UIX UI was simple:
-
 
 ![image-20220522165125043.png](https://media.graphassets.com/8ZxAKJWgSdazkDgFORAO)
 
@@ -189,17 +187,14 @@ type HygraphReference<T extends string, K> = {
   }
 }
 
-type ProductRevalidateData = HasSlug &
-  HygraphReference<"categories", HasSlug>
+type ProductRevalidateData = HasSlug & HygraphReference<"categories", HasSlug>
 
-type CategoryRevalidateData = HasSlug &
-  HygraphReference<"products", HasSlug>
+type CategoryRevalidateData = HasSlug & HygraphReference<"products", HasSlug>
 
 type RequestData =
   | ({ model: "Product" } & ProductRevalidateData)
   | ({ model: "Category" } & CategoryRevalidateData)
   | { model: "Info" }
-
 ```
 
 I also had a `getPaths(req: RequestData): string[]` method to return a list of
@@ -210,26 +205,22 @@ handler was as simple as:
 ```typescript
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ResponseData>
+  res: NextApiResponse<ResponseData>,
 ) {
   if (req.method === "POST") {
-    const authToken =
-      req.headers["authorization"]?.split(" ")[1]
+    const authToken = req.headers["authorization"]?.split(" ")[1]
     if (authToken !== process.env.REVALIDATION_TOKEN) {
       res.status(401).end()
       return
     }
     const request: RequestData = JSON.parse(req.body)
     const paths = getPaths(request)
-    await Promise.all(
-      paths.map(path => res.unstable_revalidate(path))
-    )
+    await Promise.all(paths.map((path) => res.unstable_revalidate(path)))
     res.status(200).send({ success: true })
   } else {
     res.status(204).end()
   }
 }
-
 ```
 
 While testing this code, I spent around half an hour debugging the ISR not
@@ -246,15 +237,8 @@ handle this, I had to set CORS headers in the API response as:
 ```typescript
 res
   .setHeader("Access-Control-Allow-Origin", "*")
-  .setHeader("Access-Control-Allow-Methods", [
-    "POST",
-    "OPTIONS",
-  ])
-  .setHeader("Access-Control-Allow-Headers", [
-    "authorization",
-    "content-type",
-  ])
-
+  .setHeader("Access-Control-Allow-Methods", ["POST", "OPTIONS"])
+  .setHeader("Access-Control-Allow-Headers", ["authorization", "content-type"])
 ```
 
 This will set the headers for all HTTP methods, even though the browser will
@@ -272,4 +256,3 @@ free to open a PR if that is the use case that you need!
 
 [@cadudecastroalves](https://www.linkedin.com/in/cadudecastroalves/) for
 helping me to get started on Hygraph UIX
-

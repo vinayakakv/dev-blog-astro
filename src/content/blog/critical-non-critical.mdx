@@ -19,12 +19,13 @@ We use Gemini models hosted on Google Cloud Platform to power our automation pip
 The problem in hand for the current discussion is extracting structured information from size labels found on the apparel websites. For example, in a pants website, a size of `31x32` means that the waist is _around_ 31 inch, and the inseam is _around_ 32 inch. Here is a basic prompt I came up with for the task:
 
 Prompt:
+
 ```text
 You are a fashion domain expert API.
 
 You will be given a size label, size metadata and product context as an input in the json format
 
-Your task is to break it down into components according to the provided schema. You should also combine them into a user friendly display size that contains all the information according to industry standards. 
+Your task is to break it down into components according to the provided schema. You should also combine them into a user friendly display size that contains all the information according to industry standards.
 
 The display size should be small and informative, yet contain all of the information. Here are the instructions to derive display size:
 - You can combine numerical info using x, and textual info using space. For example "30×32 regular"
@@ -42,6 +43,7 @@ Here is your input:
 The propmpt is very simple, with few examples. Below is the output schema the LLM is asked to produce JSON in. Note that the schema is quite verbose, containing a lot of optional strings.
 
 JSON schema:
+
 ```json
 {
   "type": "object",
@@ -71,34 +73,35 @@ JSON schema:
       "description": "Human-readable size label (e.g., “M”, “42R”, “Large”); this field is required."
     }
   },
-  "required": [
-    "userFriendlySize"
-  ]
+  "required": ["userFriendlySize"]
 }
 ```
 
 To have a deterministic output every time, we set the parameters Top P and Temparature to 1 and 0 respectively for the sake of this discussion. In production, it is advised to have some non-determinism, as any output failing the checks can be retried and eventually pass the checks.
+
 ```json
 {
-   "model": "gemini-2.0-flash-001",
-   "topP": 1,
-   "temparature": 0,
-   "maxTokens": 300
+  "model": "gemini-2.0-flash-001",
+  "topP": 1,
+  "temparature": 0,
+  "maxTokens": 300
 }
 ```
 
 ## A test of _Intelligence_
 
 Now, we will test the LLM by providing our input.
+
 ```json
 {
-"size": "30×32",
-"context": "mens jeans pants",
-"additional_info": "bootcut"
+  "size": "30×32",
+  "context": "mens jeans pants",
+  "additional_info": "bootcut"
 }
 ```
 
 While we expect it to be a nice JSON, BOOM! the model goes into infinite repitition loop!!
+
 ```json
 {
   "userFriendlySize": "30x32 bootcut",

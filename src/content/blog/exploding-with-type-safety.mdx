@@ -1,8 +1,8 @@
 ---
 slug: exploding-with-type-safety
-title: 'Exploding with Type Safety'
-description: 'We explore the operation of exploding an object in this post, and make it robust by adding strong typing for its inputs and output'
-date: '2023-09-24'
+title: "Exploding with Type Safety"
+description: "We explore the operation of exploding an object in this post, and make it robust by adding strong typing for its inputs and output"
+date: "2023-09-24"
 tldr: |
   - We solve an interesting problem of _exploding_ an array property of an object.
   - The `explode` function takes in a object, and its key as the input. It
@@ -182,20 +182,20 @@ definition to check if argument types work properly:
 ```typescript
 const res1 = explode(
   {
-    university: 'XYZ',
+    university: "XYZ",
     batch: 2019,
-    students: [{ name: 'Alice' }, { name: 'Bob' }],
+    students: [{ name: "Alice" }, { name: "Bob" }],
   },
-  'university'
+  "university",
 ) // type error
 
 const res2 = explode(
   {
-    university: 'XYZ',
+    university: "XYZ",
     batch: 2019,
-    students: [{ name: 'Alice' }, { name: 'Bob' }],
+    students: [{ name: "Alice" }, { name: "Bob" }],
   },
-  'students'
+  "students",
 ) // no error
 ```
 
@@ -240,7 +240,7 @@ Now, we can proceed to type the `explode` function completly:
 ```typescript
 const explode = <T extends object, K extends ArrayKeys<T>>(
   object: T,
-  key: K
+  key: K,
 ) => {
   const { [key]: array, ...rest } = object
   return (
@@ -267,33 +267,33 @@ let's assume we have an e-commerce order object:
 
 ```typescript
 const order = {
-  type: 'Order',
+  type: "Order",
   customer: {
-    name: 'Alice',
-    address: '123 st.',
+    name: "Alice",
+    address: "123 st.",
   },
   items: [
     {
-      id: '111',
-      name: 'Long sleeve T Shirt',
+      id: "111",
+      name: "Long sleeve T Shirt",
       price: 15,
-      currency: 'USD',
+      currency: "USD",
     },
     {
-      id: '232',
-      name: 'Jeans',
+      id: "232",
+      name: "Jeans",
       price: 12,
-      currency: 'USD',
+      currency: "USD",
     },
   ],
   offers: [
     {
-      code: 'FIRST-CUSTOMER',
-      discountPercentage: '20',
+      code: "FIRST-CUSTOMER",
+      discountPercentage: "20",
     },
     {
-      code: 'REFFERAL',
-      discountPercentage: '10',
+      code: "REFFERAL",
+      discountPercentage: "10",
     },
   ],
 }
@@ -303,8 +303,8 @@ As per our expectations, `explode` on this object should work for `items` and
 `offers`, but not on other keys:
 
 ```typescript
-const result1 = explode(order, 'type') // type error
-const result2 = explode(order, 'items') // works
+const result1 = explode(order, "type") // type error
+const result2 = explode(order, "items") // works
 /*
 const result2 = [
   {
@@ -351,7 +351,7 @@ const result2 = [
   },
 ]
 */
-const result3 = explode(order, 'offers') // works
+const result3 = explode(order, "offers") // works
 /*
 const result3 = [
   {

@@ -9,7 +9,7 @@ tldr: |
 categories: []
 ---
 
-In my last article [Lazy is easy](/blog/lazy-is-easy),  I implemented lazy
+In my last article [Lazy is easy](/blog/lazy-is-easy), I implemented lazy
 loading the properties of a JS object, with full type-safety. There was one
 caveat, though -- we named the properties as variable names (`name`), when they
 were the getters. Ideally, we could have named them `getName`, and `Proxy`
@@ -44,10 +44,9 @@ uppercase characters.
 ```typescript
 const letters = "abcdefghijklmnopqrstuvwxyz"
 
-type Split<T extends string> =
-  T extends `${infer First}${infer Rest}`
-    ? First | Split<Rest>
-    : never
+type Split<T extends string> = T extends `${infer First}${infer Rest}`
+  ? First | Split<Rest>
+  : never
 
 type LowercaseLetters = Split<typeof letters>
 
@@ -79,7 +78,7 @@ Let's try it in action.
 ```typescript
 type t1 = PropertyName<"getPropertyName"> // = propertyName
 type t2 = PropertyName<"setPropertyName"> // Error
-type t3 = PropertyName<"getpropertyName"> // Error 
+type t3 = PropertyName<"getpropertyName"> // Error
 ```
 
 Now that we get it working, let's implement the return type of our new `lazy`
@@ -91,9 +90,7 @@ Armed with the type `PropertyName`, we can now define the `Lazy` type as:
 
 ```typescript
 type Lazy<T extends LazyInput> = {
-  [K in keyof T as PropertyName<
-    K & GetterName
-  >]: ReturnType<T[K & GetterName]>;
+  [K in keyof T as PropertyName<K & GetterName>]: ReturnType<T[K & GetterName]>
 }
 ```
 
@@ -101,14 +98,14 @@ There are several differences here from previous article:
 
 - We are _renaming_ the keys here using `as` operator to `PropertyName`
 - While doing so, we are intersecting the key type `K` with `GetterName` to
-ensure we pass in the right types.
+  ensure we pass in the right types.
 
 Let's check if that works:
 
 ```typescript
 type t1 = Lazy<{}> // = {}
 type t2 = Lazy<{
-  getX: () => number,
+  getX: () => number
   getLongProperty: () => string
 }> // = {x: number, longProperty: string}
 type t3 = Lazy<{
@@ -126,7 +123,7 @@ _constraint_ on `T` that it should _extend_ `LazyInput`. Let's check if the
 type `{hello: number}` satisfies that constraint.
 
 ```typescript
-type test = {hello: number} extends LazyInput ? true: false // = true
+type test = { hello: number } extends LazyInput ? true : false // = true
 ```
 
 Woah, seems like TS is doing something wrong here :open_mouth:, although we
@@ -135,7 +132,7 @@ investigate this further, let's supply a `GetterName` key, but with an invalid
 value (say `number`)
 
 ```typescript
-type test = {getHello: number} extends LazyInput ? true: false // = false
+type test = { getHello: number } extends LazyInput ? true : false // = false
 ```
 
 Ah, now it is `false` and TS seems back alive. Does it mean that TS is
@@ -153,7 +150,7 @@ the same things with `type` and intersection using `&`.
 
 ```typescript
 interface Person {
-  name: string,
+  name: string
   age: number
 }
 
@@ -165,11 +162,11 @@ interface PersonWithHealthInfo extends Person {
   bloodGroup: string
 }
 
-type t1 = PersonWithHealthInfo extends Person ? true: false // = true
-type t2 = PersonWithPhone extends Person? true: false // = true
-type t3 = {} extends Person? true: false // = false
-type t4 = Person extends Person? true: false // = true
-type t5 = {name: string} extends Person? true: false // = false
+type t1 = PersonWithHealthInfo extends Person ? true : false // = true
+type t2 = PersonWithPhone extends Person ? true : false // = true
+type t3 = {} extends Person ? true : false // = false
+type t4 = Person extends Person ? true : false // = true
+type t5 = { name: string } extends Person ? true : false // = false
 ```
 
 Here, the `extends` keyword is both used to create subtypes and check if a type
@@ -178,7 +175,7 @@ contains all properties of `Person`, the `extends` check returns `true`.
 Keeping this model in mind, let's go beyond pre-defined properties to explore
 what happens in case of keyed properties.
 
-Let's consider back our `LazyInput` type, with some simplifications. 
+Let's consider back our `LazyInput` type, with some simplifications.
 
 ```typescript
 type LazyInputSimplified = {
@@ -190,9 +187,9 @@ Let's look at some valid and invalid _values_ for this type:
 
 ```typescript
 const e1: LazyInputSimplified = {} // valid
-const e2: LazyInputSimplified = {"hello": 1, "world": 2} // invalid
-const e3: LazyInputSimplified = {2: 5} // invalid
-const e4: LazyInputSimplified = {"getA": 3} // valid
+const e2: LazyInputSimplified = { hello: 1, world: 2 } // invalid
+const e3: LazyInputSimplified = { 2: 5 } // invalid
+const e4: LazyInputSimplified = { getA: 3 } // valid
 ```
 
 This is also as expected. Note that the empty object is also a valid value.
@@ -208,12 +205,19 @@ keys to it as long as we don't touch `GetterName` and provide it with an
 invalid value (other than `number`). To make it clear:
 
 ```typescript
-type t1 = {} extends LazyInputSimplified ? true: false // = true
-type t2 = {hi: "hello"} extends LazyInputSimplified? true: false // = true
-type t3 = {hi: "hello", getA: boolean} extends LazyInputSimplified? true: false
+type t1 = {} extends LazyInputSimplified ? true : false // = true
+type t2 = { hi: "hello" } extends LazyInputSimplified ? true : false // = true
+type t3 = { hi: "hello"; getA: boolean } extends LazyInputSimplified
+  ? true
+  : false
 // = false
-type t4 = {hi: "hello", getA: number, getB: number} extends
-LazyInputSimplified? true: false // = true
+type t4 = {
+  hi: "hello"
+  getA: number
+  getB: number
+} extends LazyInputSimplified
+  ? true
+  : false // = true
 ```
 
 - `t1` is `true`, as empty object type is a valid `LazyInputSimplified`
@@ -221,7 +225,7 @@ LazyInputSimplified? true: false // = true
 - `t3` is `false`, as it violated `LazyInputSimplified` constraint in `{getA:
 boolean}`
 - `t4` is `true`, as it defines extra keys than `{getA: 3, getB: 4}` , a valid
-`LazyInputSimplified`
+  `LazyInputSimplified`
 
 Now we know why `type test = {hello: number} extends LazyInput ? true: false //
 = true` was true. It did extend `LazyInput` by defining an extra key `hello`.
@@ -237,10 +241,10 @@ that, we should:
 
 - Loop over all keys `k` of `T`
 - If `k` is a key of `U` also, we proceed to compare the value types
-  - If `U[k]` is a subtype of  `T[k]`, we keep it as it is
+  - If `U[k]` is a subtype of `T[k]`, we keep it as it is
   - otherwise, we set `T[k]` to be `never` so that we disallow any values there
 - Otherwise, we set the value to `never` so that we disallow all the values to
-key `k`.
+  key `k`.
 
 This way, we keep all the keys `k`, but set the values to `never`, so that any
 assignment to that key results in a type error. The type implementing this
@@ -261,14 +265,15 @@ With this type, let's validate our assumptions on `LazyInputSimplified`:
 ```typescript
 type t1 = Restrict<{}, LazyInputSimplified>
 // type t1 = {}
-type t2 = Restrict<{hi: "hello"}, LazyInputSimplified>
+type t2 = Restrict<{ hi: "hello" }, LazyInputSimplified>
 // type t2 = {hi: never}
-type t3 = Restrict<{hi: "hello", getA: false}, LazyInputSimplified>
+type t3 = Restrict<{ hi: "hello"; getA: false }, LazyInputSimplified>
 // Error, violates generic constraint
-type t4 = Restrict<{hi: "hello", getA: number, getB: number},
-LazyInputSimplified>
+type t4 = Restrict<
+  { hi: "hello"; getA: number; getB: number },
+  LazyInputSimplified
+>
 // type t4 = { hi: never; getA: number; getB: number; }
-
 ```
 
 As we see from the above examples, we get `never` on incompatible properties,
@@ -276,16 +281,14 @@ thus preventing them from assigning. Now, we can redefine `Lazy` using new
 `Restrict` utility:
 
 ```typescript
-type Lazy<T extends LazyInput> = T extends Restrict<
-  T,
-  LazyInput
->
-  ? {
-      [K in keyof T as PropertyName<
-        K & GetterName
-      >]: ReturnType<T[K & GetterName]>
-    }
-  : never
+type Lazy<T extends LazyInput> =
+  T extends Restrict<T, LazyInput>
+    ? {
+        [K in keyof T as PropertyName<K & GetterName>]: ReturnType<
+          T[K & GetterName]
+        >
+      }
+    : never
 ```
 
 The core part of the type is still the same. On top of that, we check if `T`
@@ -295,7 +298,7 @@ example becomes,
 ```typescript
 type t1 = Lazy<{}> // = {}
 type t2 = Lazy<{
-  getX: () => number,
+  getX: () => number
   getLongProperty: () => string
 }> // = {x: number, longProperty: string}
 type t3 = Lazy<{
@@ -323,48 +326,42 @@ the property name.
 ```typescript
 const getterName = (prop: string) => {
   const [first, ...rest] = prop.split("")
-  return ["get", first!.toUpperCase(), ...rest].join(
-    ""
-  ) as GetterName
+  return ["get", first!.toUpperCase(), ...rest].join("") as GetterName
 }
 ```
 
 Then, we can proceed to implement the `lazy()` method as,
 
 ```typescript
-const lazy = <T extends Restrict<T, LazyInput>>(
-  object: T
-) => {
+const lazy = <T extends Restrict<T, LazyInput>>(object: T) => {
   const cache = {} as any
   return new Proxy(object, {
     get(target, prop) {
       if (!(prop in cache)) {
         // Forward symbol | number to original object
-        if (typeof prop !== "string")
-          cache[prop] = target[prop as keyof T]
+        if (typeof prop !== "string") cache[prop] = target[prop as keyof T]
         else {
           const getter = (target as LazyInput)[getterName(prop)]
           cache[prop] = getter ? getter() : undefined
         }
       }
       return cache[prop]
-    }
+    },
   }) as any as Lazy<T>
 }
-
 ```
 
 Some notes here:
 
 - We can not return `Proxy` as `Lazy` as we did earlier, as the keys are also
-different. Since we are sure about this, we do `as any as Lazy<T>`
+  different. Since we are sure about this, we do `as any as Lazy<T>`
 - We also type `cache` as `any` where we could have used `Lazy<T>`. This is
-simply to save ourselves from lots of type castings throughout!
+  simply to save ourselves from lots of type castings throughout!
 - We choose to forward `number | symbol` accesses to original object as it is,
-while doing so, we have to convert `prop` to `keyof T` as we are not doing any
-modifications to key here.
+  while doing so, we have to convert `prop` to `keyof T` as we are not doing any
+  modifications to key here.
 - To get the type-safe version of `getter`, we are first casting `target` to
-`LazyInput` (which is `Restrict<T, LazyInput>`)
+  `LazyInput` (which is `Restrict<T, LazyInput>`)
 
 Phew, that's lots of TS manipulations even when we are writing the logic part.
 Anyway, let's go ahead and test the `lazy()` method we just implemented:
@@ -392,9 +389,9 @@ Our results are bittersweet:
 
 - We got successful type inference for the type of the `lazyObject`
 - Caching is also working, we are seeing the `logAndReturn` call for only the
-first access
+  first access
 - _However_, destructuring and logging the object does not seem to get hang of
-new property names yet...
+  new property names yet...
 
 Let's go ahead and fix the problem for good.
 
@@ -408,28 +405,23 @@ tell the JS that we have new keys. Fortunately, we can also override the
 - Map them to property names, let's write an utility function for that.
 
 ```typescript
-const propertyName = <T extends GetterName>(
-  getterName: T
-): PropertyName<T> => {
+const propertyName = <T extends GetterName>(getterName: T): PropertyName<T> => {
   const [first, ...r] = getterName.slice(3).split("")
-  return [first!.toLowerCase(), ...r].join(
-    ""
-  ) as PropertyName<T>
+  return [first!.toLowerCase(), ...r].join("") as PropertyName<T>
 }
 ```
 
 Let's override the `ownKeys` method also:
 
 ```typescript
-const lazy = <T extends Restrict<T, LazyInput>>(
-  object: T
-) => {
+const lazy = <T extends Restrict<T, LazyInput>>(object: T) => {
   // same as before
   return new Proxy(object, {
     // same as before
     ownKeys(target) {
-      return Object.keys(target)
-        .map((getter) => propertyName(getter as GetterName))
+      return Object.keys(target).map((getter) =>
+        propertyName(getter as GetterName),
+      )
     },
   })
 }
@@ -450,9 +442,7 @@ have to make our new keys visible to JS. Turns out that we have to make them
 `getOwnPropertyDescriptor` of the proxy handler:
 
 ```typescript
-const lazy = <T extends Restrict<T, LazyInput>>(
-  object: T
-) => {
+const lazy = <T extends Restrict<T, LazyInput>>(object: T) => {
   // same as before
   return new Proxy(object, {
     // same as before
@@ -521,28 +511,27 @@ Try this code sample in
 ## Caveats
 
 - For a `Record<string, string>`, although we have specified string keys, we
-can have number keys. This is due to JS internally converting number index
-access to string access.
-
+  can have number keys. This is due to JS internally converting number index
+  access to string access.
   - ```typescript
-    const x: Record<string, string> =  {2: "Hi"} // valid
+    const x: Record<string, string> = { 2: "Hi" } // valid
     ```
 
 - The `Restrict<>` type seems incomplete, for example, a call to `lazy(2)` is
-still valid, though I didn't understand why this works yet. Maybe a TS Bug?
-:thinking:
+  still valid, though I didn't understand why this works yet. Maybe a TS Bug?
+  :thinking:
 
 - Anything else, you tell me!
 
 ## Credits
 
 - [Type Level Programming in
-TypeScript](https://www.youtube.com/watch?v=vGVvJuazs84&ab_channel=GabrielVergnaud)
--- an excellent talk where I got ideas about thinking about types as sets, and
-constructs on them
+  TypeScript](https://www.youtube.com/watch?v=vGVvJuazs84&ab_channel=GabrielVergnaud)
+  -- an excellent talk where I got ideas about thinking about types as sets, and
+  constructs on them
 - [Type
-Compatibility](https://www.typescriptlang.org/docs/handbook/type-compatibility.html)
--- the docs page where I'm _still_ figuring out the assignability
+  Compatibility](https://www.typescriptlang.org/docs/handbook/type-compatibility.html)
+  -- the docs page where I'm _still_ figuring out the assignability
 
 ## PS
 

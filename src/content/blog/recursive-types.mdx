@@ -32,7 +32,7 @@ to it to make it robust.
 
 APIs and Databases normally use differnet styles of naming variables. While API
 fields are `camelCase` most of the times, in DB, we often name columns in
-`snake_case` often. 
+`snake_case` often.
 
 Snake case names in DB are reasonable, as SQL is case-insensitvive. A variable
 in camelcase, say, `jsonPayload` is converted to `jsonpayload` unless quoted.
@@ -44,7 +44,7 @@ cases, when we need to deal with db directly, we need to handle case
 conversion. The problem is to handle the conversion in a type-safe way. We will
 solidify our expectations soon.
 
-## The Beginnings 
+## The Beginnings
 
 Let's start with a JS function to convert camel case strings to snake case, and
 iteratively add features later on. Converting a camel case string to snake case
@@ -55,16 +55,13 @@ does not contain any special characters (it makes sense, as we can't use
 special characters while naming identifiers and DB columns).
 
 ```javascript
-const isUpperCase = (letter) =>
-  letter === letter.toUpperCase()
+const isUpperCase = (letter) => letter === letter.toUpperCase()
 
 const toSnakeCase = (word) =>
   word
     .split("")
     .map((letter) =>
-      isUpperCase(letter)
-        ? ["_", letter.toLowerCase()]
-        : [letter],
+      isUpperCase(letter) ? ["_", letter.toLowerCase()] : [letter],
     )
     .flat()
     .join("")
@@ -80,10 +77,7 @@ we got in API body, and the output as what we want to write to DB.
 ```javascript
 const convertKeysToSnakeCase = (object) =>
   Object.fromEntries(
-    Object.entries(object).map(([key, value]) => [
-      toSnakeCase(key),
-      value,
-    ]),
+    Object.entries(object).map(([key, value]) => [toSnakeCase(key), value]),
   )
 
 const result = convertKeysToSnakeCase({
@@ -98,16 +92,13 @@ const result = convertKeysToSnakeCase({
 Let's start by tyoing adding types to `isUpperCase` and `toSnakeCase` functions
 
 ```typescript
-const isUpperCase = (letter: string) =>
-  letter === letter.toUpperCase()
+const isUpperCase = (letter: string) => letter === letter.toUpperCase()
 
 const toSnakeCase = (word: string) =>
   word
     .split("")
     .map((letter) =>
-      isUpperCase(letter)
-        ? ["_", letter.toLowerCase()]
-        : [letter],
+      isUpperCase(letter) ? ["_", letter.toLowerCase()] : [letter],
     )
     .flat()
     .join("")
@@ -123,10 +114,7 @@ Now, it is time to type `convertKeysToSnakeCase` too. We can start as:
 ```typescript
 const convertKeysToSnakeCase = (object: object) =>
   Object.fromEntries(
-    Object.entries(object).map(([key, value]) => [
-      toSnakeCase(key),
-      value,
-    ]),
+    Object.entries(object).map(([key, value]) => [toSnakeCase(key), value]),
   )
 ```
 
@@ -182,9 +170,7 @@ snake case.
 type ToSnakeCase<T extends string> = T // It does nothing now
 
 type ConvertKeysToSnakeCase<T extends object> = {
-  [Key in keyof T as ToSnakeCase<
-    Key & string
-  >]: T[Key]
+  [Key in keyof T as ToSnakeCase<Key & string>]: T[Key]
 }
 ```
 
@@ -192,7 +178,7 @@ In `Key in keyof T as ToSnakeCase<Key & string>`, we are looping over all keys
 of T (got by `keyof T`), with indivual key as `Key`. Then, we are mapping it
 using `as` keyword to `ToSnakeCase<Key>`. We need `Key & string` in the
 argument as key of an object may be `string | number | symbol`, and we want
-eliminate `number | symbol` from the loop. 
+eliminate `number | symbol` from the loop.
 
 Now, let's move to the fun part of implementing `ToSnakeCase` itself!
 
@@ -205,17 +191,14 @@ just saw). TS supports recursion with template literal types. Before going to
 TS, let's try solving the problem in JS recursively.
 
 ```typescript
-const isUpperCase = (letter: string) =>
-  letter === letter.toUpperCase()
+const isUpperCase = (letter: string) => letter === letter.toUpperCase()
 
 const toSnakeCase = (word: string): string => {
   const [first, ...rest] = word
   if (!first) return "" // Base case
   const restString = rest.join("")
   return isUpperCase(first)
-    ? `_${first.toLowerCase()}${toSnakeCase(
-        restString,
-      )}`
+    ? `_${first.toLowerCase()}${toSnakeCase(restString)}`
     : `${first}${toSnakeCase(restString)}`
 }
 
@@ -226,24 +209,24 @@ Let's break down how this is working:
 
 - We first split the `word` into `first` and `rest`, where `first` is `string |
 undefined`, and `rest` is `string[]`using [JS spread
-syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax)
+  syntax](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Spread_syntax)
 - `first` will be `undefined` whenever `word=""`, so we return `""` in that
-case (by equality, we could have returned `first` too, but returning `""` gives
-clarity to the reader)
+  case (by equality, we could have returned `first` too, but returning `""` gives
+  clarity to the reader)
 - We convert `rest` to a string to prepare it to be called recursively
 - We check if `first` is an uppercase, similar to iterative case. If it is the
-case then emit an underscore and corresponding lowercase letter; otherwise, we
-don't change `first`
+  case then emit an underscore and corresponding lowercase letter; otherwise, we
+  don't change `first`
 - We append the result of the recursion to the first character using [JS
-Template
-Strings](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals).
+  Template
+  Strings](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals).
 
 Note that:
 
 - We had to explicitly type the return value of `toSnakeCase` as `string` as TS
-infered `any` as the return type of recursive function
+  infered `any` as the return type of recursive function
 - While this code works fine in native JS, in order for it to work in TS, we
-need to set `"downlevelIteration": true`
+  need to set `"downlevelIteration": true`
 
 Splitting an iterable to its _head_ and _body_ is a common operation in many
 functional programming languages, which enables an operation on _head_ and
@@ -251,17 +234,13 @@ recursion on _body_. Fortunately, TS provides such functionality too, which we
 can leverage. Let's explore the functionality:
 
 ```typescript
-type ListComponents<T> = T extends [
-  infer First,
-  ...infer Rest,
-]
+type ListComponents<T> = T extends [infer First, ...infer Rest]
   ? { head: First; body: Rest }
   : never
 
-type StringComponents<T> =
-  T extends `${infer First}${infer Rest}`
-    ? { head: First; body: Rest }
-    : never
+type StringComponents<T> = T extends `${infer First}${infer Rest}`
+  ? { head: First; body: Rest }
+  : never
 
 type ListResult1 = ListComponents<[]>
 // type ListResult1 = never
@@ -313,12 +292,11 @@ With the power of pattern matching in hand, we can easily convert the recursive
 version of `toSnakeCase` into a type.
 
 ```typescript
-type ToSnakeCase<T extends string> =
-  T extends `${infer First}${infer Rest}`
-    ? First extends Uppercase<First>
-      ? `_${Lowercase<First>}${ToSnakeCase<Rest>}`
-      : `${First}${ToSnakeCase<Rest>}`
-    : T
+type ToSnakeCase<T extends string> = T extends `${infer First}${infer Rest}`
+  ? First extends Uppercase<First>
+    ? `_${Lowercase<First>}${ToSnakeCase<Rest>}`
+    : `${First}${ToSnakeCase<Rest>}`
+  : T
 
 type Result1 = ToSnakeCase<"helloWorldTest"> // hello_world_test
 type Result2 = ToSnakeCase<"JsonPayload"> // _json_payload
@@ -334,9 +312,7 @@ With `ToSnakeCase` in our hand, we can revisit `ConvertKeysToSnakeCase` now.
 
 ```typescript
 type ConvertKeysToSnakeCase<T extends object> = {
-  [Key in keyof T as ToSnakeCase<
-    Key & string
-  >]: T[Key]
+  [Key in keyof T as ToSnakeCase<Key & string>]: T[Key]
 }
 
 type ObjectResult = ConvertKeysToSnakeCase<{
@@ -354,14 +330,9 @@ type ObjectResult = ConvertKeysToSnakeCase<{
 And there we are! Now we can add types to `convertKeysToSnakeCase` function
 
 ```typescript
-const convertKeysToSnakeCase = <T extends object>(
-  object: T,
-) =>
+const convertKeysToSnakeCase = <T extends object>(object: T) =>
   Object.fromEntries(
-    Object.entries(object).map(([key, value]) => [
-      toSnakeCase(key),
-      value,
-    ]),
+    Object.entries(object).map(([key, value]) => [toSnakeCase(key), value]),
   ) as ConvertKeysToSnakeCase<T>
 ```
 
@@ -389,18 +360,16 @@ domain, let's do the same of reverse.
 ```typescript
 // Iterative version
 const toCamelCase = (snakeCaseString: string) =>
-  snakeCaseString.replaceAll(/_./g, (match) =>
-    match.at(1).toUpperCase(),
-  )
+  snakeCaseString.replaceAll(/_./g, (match) => match.at(1).toUpperCase())
 ```
 
 Here, we find all underscores and the next character, and replace it with the
 uppercase version of the next character.
 
 > **Bug Alert**: Both `toSnakeCase` and `toCamelCase` miss a few edge cases.
-Ideally, `toSnakeCase(toCamelCase(s)) === s` and  ` toCamelCase(toSnakeCase(s))
-=== s`,  in both runtime and type domain, which is not the case here. I will
-leave it as an exercise to the reader to fix them to handle the edge cases.
+> Ideally, `toSnakeCase(toCamelCase(s)) === s` and ` toCamelCase(toSnakeCase(s))
+=== s`, in both runtime and type domain, which is not the case here. I will
+> leave it as an exercise to the reader to fix them to handle the edge cases.
 
 We can also achive the same thing in recursion:
 
@@ -427,21 +396,19 @@ case, but has a different logic during recursion.
 Now, we can convert this to type domain.
 
 ```typescript
-type ToCamelCase<T extends string> =
-  T extends `${infer First}${infer Rest}`
-    ? First extends "_"
-      ? Capitalize<ToCamelCase<Rest>>
-      : `${First}${ToCamelCase<Rest>}`
-    : T
+type ToCamelCase<T extends string> = T extends `${infer First}${infer Rest}`
+  ? First extends "_"
+    ? Capitalize<ToCamelCase<Rest>>
+    : `${First}${ToCamelCase<Rest>}`
+  : T
 ```
 
 We can go one step forward and use TS pattern matching to our advantage:
 
 ```typescript
-type ToCamelCase<T extends string> =
-  T extends `${infer First}_${infer Rest}`
-    ? `${First}${Capitalize<ToCamelCase<Rest>>}`
-    : T
+type ToCamelCase<T extends string> = T extends `${infer First}_${infer Rest}`
+  ? `${First}${Capitalize<ToCamelCase<Rest>>}`
+  : T
 ```
 
 Here we added underscore to the pattern itself to simplify the recursive case.
@@ -455,4 +422,3 @@ at a time, and then repeating the same on one or more subproblems. Recursion
 also helps to bring out the mathematical structure of the problem. While
 recursion is generally not optimized in many procedural languages, they are
 heavily optimized in functional languages and are fun to use!
-

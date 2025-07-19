@@ -65,16 +65,16 @@ this short article, let's see how we can approach this problem with the
 constraints of:
 
 - Doing minimal modifications at the computation side
-(`aFunctionReturningObject`)
+  (`aFunctionReturningObject`)
 - Doing **no** modification at the site of usage
 - Keeping the usages type-safe and syntactically clean (ideally, same as what
-we have written earlier)
+  we have written earlier)
 
 ## Become Lazy
 
 Turns out that this problem is pretty common in Computer Science and its
 solution is called **[Lazy
-Evaluation](https://en.wikipedia.org/wiki/Lazy_evaluation#:~:text=In%20programming%20language%20theory%2C%20lazy,avoids%20repeated%20evaluations%20(sharing).)**.
+Evaluation](<https://en.wikipedia.org/wiki/Lazy_evaluation#:~:text=In%20programming%20language%20theory%2C%20lazy,avoids%20repeated%20evaluations%20(sharing).>)**.
 Lazy Evaluation is the method of evaluating an expression at the site of its
 usage, rather than the declaration. In our function `aFunctionReturningObject`,
 we are calculating `property1`, `property2`, ... during its declaration. With
@@ -115,10 +115,10 @@ const user = () => {
 However, this solution has a few problems:
 
 - The property access is now a function call, which requires modifications at
-the user side
+  the user side
 - Evaluating the same property twice, would require evaluating
-`doHeavyComputation()` twice, which might not be ideal if the heavy computation
-is returning the same values every time
+  `doHeavyComputation()` twice, which might not be ideal if the heavy computation
+  is returning the same values every time
 
 ## Lazy Pro
 
@@ -152,14 +152,14 @@ const lazy = <T extends {}>(object: T) => {
 The logic is straightforward albeit with an error:
 
 - We take in a type `T` that extends `{}`, as Proxy requires an object as its
-input
+  input
 - In `Proxy`, we intercept the `get` method, which corresponds to all property
-accesses
+  accesses
 - The `get` method takes `target` (in our case, same as `object`) and the
-`prop`, the property being accessed as parameters
+  `prop`, the property being accessed as parameters
 - `prop` can be any `string | symbol`, we cast it to `keyof T` as `key`.
 - We check if `key` is the `cache`, if it isn't, we access it from `target`,
-check if it is not undefined, and evaluate it
+  check if it is not undefined, and evaluate it
 - Finally, we return `cache[key]`
 
 TS screams us with an error that we can not use `value()`, as it is `unknown`.
@@ -196,7 +196,7 @@ Then, let's prepare input for `lazy`
 ```typescript
 const input = {
   intValue: () => logAndReturn(2),
-  stringValue: () => logAndReturn("string")
+  stringValue: () => logAndReturn("string"),
 }
 ```
 
@@ -223,14 +223,10 @@ well:
 
 ```typescript
 const addOne = (x: number) => x + 1
-const addPrefix = (prefix: string, value: string) =>
-  `${prefix}${value}`
+const addPrefix = (prefix: string, value: string) => `${prefix}${value}`
 
 const intResult = addOne(lazyOutput.intValue)
-const stringResult = addPrefix(
-  "result:",
-  lazyOutput.stringValue
-)
+const stringResult = addPrefix("result:", lazyOutput.stringValue)
 
 console.log({ intResult, stringResult })
 ```

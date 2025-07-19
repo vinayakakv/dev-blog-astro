@@ -6,23 +6,22 @@ date: "2022-07-10"
 tldr: |
   - I came across a problem recently where I had to _type_ the conversion of
   object keys from `camelCase` to `snake_case`  in TypeScript.
-  
+
   - While implementing the utilities is an easy task, making them contain type
   information was crucial.
-  
+
   - Using TypeScript's template literal string and pattern matching, first, I
   defined a type to convert strings from `camelCase` to `snake_case`.
-  
+
   - By mapping through keys of the object, and converting them to `snake_case`
   using the utility defined earlier, I was able to convert the keys of the object
   type.
-  
+
   - Adding type annotations required a similar kind of computation, except that
   it was on types. I wondered if we can reduce the double computation, anyway it
   is not possible since the type computations exist only during compile time
   :sweat_smile:
-  
-  
+
 categories:
   - slug: typescript
     title: TypeScript
@@ -35,14 +34,14 @@ TypeORM do this conversion automatically, making the process seamless. However,
 I recently came across a use case in TypeScript where this conversion was
 manual, we had to retain the type information.
 
->  **The problem**: Given an object having the keys in `camelCase` format,
-convert them to `snake_case` **retaining Type Information after the
-conversion**. 
+> **The problem**: Given an object having the keys in `camelCase` format,
+> convert them to `snake_case` **retaining Type Information after the
+> conversion**.
 
 While it is easy to convert a string to `snake_case`, retaining the type
 information is the key here. Let's start with a simple, recursive (you will
 know in a short while why we are doing recursion :smile:) function to convert a
-string from `camelCase` to  `snake_case`.
+string from `camelCase` to `snake_case`.
 
 ```typescript
 const isUpperCase = (str: string) => str === str.toUpperCase()
@@ -52,29 +51,26 @@ const stringToSnakeCase = (str: string): string => {
   const restString = rest.join("")
   return str
     ? isUpperCase(first)
-      ? `_${first.toLowerCase()}${stringToSnakeCase(
-          restString
-        )}`
+      ? `_${first.toLowerCase()}${stringToSnakeCase(restString)}`
       : `${first}${stringToSnakeCase(restString)}`
     : str
 }
-
 ```
 
 The function is pretty simple:
 
 - First, we destruct the string into `first` and `restString` (`rest` is an
-array, we join it to get the string)
+  array, we join it to get the string)
 - If the first character is an upper case character, we insert `_` in the
-beginning, convert it into lower case and proceed to convert the rest of the
-string. 
+  beginning, convert it into lower case and proceed to convert the rest of the
+  string.
 - Otherwise, we keep the first letter as it is, and convert the rest of the
-string. 
+  string.
 - At the end, the string would be empty, and we return it.
 
 > **Note**: We have to manually add the return type to the function as
-`string`, since [TS can not infer return types of the recursions
-yet](https://github.com/Microsoft/TypeScript/issues/3336).
+> `string`, since [TS can not infer return types of the recursions
+> yet](https://github.com/Microsoft/TypeScript/issues/3336).
 
 Using this function, we can write a function to convert the keys of an object
 to `snake_case` recursively.
@@ -88,7 +84,7 @@ const _snakify = (obj: Value): Value =>
         Object.entries(obj).map(([key, value]) => [
           stringToSnakeCase(key),
           _snakify(value),
-        ])
+        ]),
       )
     : obj
 ```
@@ -136,7 +132,7 @@ Now it is the fun part -- we want to add types to the `snakifyObject` function
 to retain the information about the keys. In the end, we should be able to
 access `snakifiedObject.hi_world`, for example, with no errors.
 
-To begin with, let's define a `type` to convert a `string` to `snake_case`. 
+To begin with, let's define a `type` to convert a `string` to `snake_case`.
 
 ```typescript
 type StringToSnakeCase<Str extends string> =
@@ -145,7 +141,6 @@ type StringToSnakeCase<Str extends string> =
       ? `_${Lowercase<First>}${StringToSnakeCase<Rest>}`
       : `${First}${StringToSnakeCase<Rest>}`
     : Str
-
 ```
 
 This type definition looks similar to the definition of our `stringToSnakeCase`
@@ -153,21 +148,21 @@ function, pretty much the same thing is happening here but at the type level.
 Let's break it down:
 
 - First, we destruct the string type `T` into `First` and `Rest` using string
-literal syntax and `infer` keyword.
--  TypeScript resolves `First` to be a character and `Rest` to be a string
-(btw, both are type `string` in TypeScript).
--  Then, we do conditional to check if `First` is uppercase, and add `_` to the
-string based on that.
--  If such destruction can not happen (when `Str` is empty), we return `Str`
-itself.
+  literal syntax and `infer` keyword.
+- TypeScript resolves `First` to be a character and `Rest` to be a string
+  (btw, both are type `string` in TypeScript).
+- Then, we do conditional to check if `First` is uppercase, and add `_` to the
+  string based on that.
+- If such destruction can not happen (when `Str` is empty), we return `Str`
+  itself.
 
 Now, we can use this type as,
 
 ```typescript
-type Test1 = StringToSnakeCase<"helloWorld"> 
+type Test1 = StringToSnakeCase<"helloWorld">
 // type Test1 = "hello_world"
 
-type Test2 = StringToSnakeCase<"LongListOfWords"> 
+type Test2 = StringToSnakeCase<"LongListOfWords">
 // type Test2 == "_long_list_of_words"
 
 type Test3 = StringToSnakeCase<3.21>
@@ -180,9 +175,7 @@ object to `snake_case`.
 ```typescript
 type Snakify<T> = T extends object
   ? {
-      [K in keyof T as StringToSnakeCase<
-        K & string
-      >]: Snakify<T[K]>
+      [K in keyof T as StringToSnakeCase<K & string>]: Snakify<T[K]>
     }
   : T
 ```
@@ -194,9 +187,7 @@ return the type `T` itself (this will happen at the end of recursion).
 Using this type, we can now annotate `snakify` function as,
 
 ```typescript
-const snakifyObject = <T extends object>(obj: T) =>
-  _snakify(obj) as Snakify<T>
-
+const snakifyObject = <T extends object>(obj: T) => _snakify(obj) as Snakify<T>
 ```
 
 Now, the return types of the `snakified` object in the above example are
@@ -225,8 +216,8 @@ example,
 
 ```typescript
 const obj = {
-    hiWorld: 2,
-    hi_world: "Hello"
+  hiWorld: 2,
+  hi_world: "Hello",
 }
 
 const snakified = snakify(obj)
@@ -252,16 +243,14 @@ While we can fix the code by updating `isUpperCase` function as,
 
 ```typescript
 const isUpperCase = (str: string) =>
-  str === str.toUpperCase() &&
-  str !== str.toLocaleLowerCase()
+  str === str.toUpperCase() && str !== str.toLocaleLowerCase()
 ```
 
 to fix the type, first, we need to define a type `IsAlpha<T>` returning `T` if
 `T` is an alphabet. We can do this as,
 
 ```typescript
-type IsAlpha<T extends string> = T extends Uppercase<T> &
-  Lowercase<T>
+type IsAlpha<T extends string> = T extends Uppercase<T> & Lowercase<T>
   ? never
   : T
 ```
@@ -277,14 +266,13 @@ type StringToSnakeCase<T extends string> =
       ? `_${Lowercase<First>}${StringToSnakeCase<Rest>}`
       : `${First}${StringToSnakeCase<Rest>}`
     : T
-
 ```
 
 Then, the `type Result` would be equal to,
 
 ```typescript
 type Result = {
-    hi_world: string | number;
+  hi_world: string | number
 }
 ```
 
@@ -305,5 +293,3 @@ seems to be the only way. I'm really curious about how problems similar to
 this, that involve type manipulation and mapping are handled in other
 programming languages; please let me know if you come across such situations
 before!
-
-

@@ -5,7 +5,7 @@ description: "As a software engineer, I helped build a few systems and products 
 date: "2023-12-19"
 tldr: |
   I discuss what I did in work this year, with 12 sections, summarized as:
-  
+
   1. **Building webhook receivers**, and the best practices regarding response
   handling, data processing, auth and PII handling
   2. **Implementing a distributed cache** for NodeJS servers, and the emergence
@@ -26,7 +26,7 @@ tldr: |
   Filters**
   11. **AI AI AI!**
   12. Usual Ops Rants - Read them!
-  
+
 categories: []
 ---
 
@@ -60,12 +60,12 @@ poking us about `500`s they observed. We eventually had to replace all `500`
 throws with appropriate error codes with the following rules in mind:
 
 - If the error is from the sender side, return a non-success status, such as
-`400 BadRequest`. The sender can retry the message, which hopefully will become
-successful 
+  `400 BadRequest`. The sender can retry the message, which hopefully will become
+  successful
 - If the error is from our side (the receiver) and we can't do anything to fix
-the error, there is no point in asking the sender to send the message back.
-Thus, send a success status and log the error so that someone/some process can
-review and take further action on it
+  the error, there is no point in asking the sender to send the message back.
+  Thus, send a success status and log the error so that someone/some process can
+  review and take further action on it
 
 ### Handling PII
 
@@ -93,21 +93,22 @@ Webhook senders can rely on several mechanisms to authorize their message
 (i.e., we can be sure that it is them who sent us this message)
 
 - [**HTTP Basic
-Authentication**](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication)
-(yeah, it says authentication, but can be used for authorization as well) -
-Sent as base64 encoded `username:password` string in the `Authorization` header
-(see, now it is authorization again - HTTP Standards 😁). Sender and Reciever
-agree on `username` and `password` which are kept secret. These credentials are
-sent along with every request and **do not change** with each request.
+  Authentication**](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication)
+  (yeah, it says authentication, but can be used for authorization as well) -
+  Sent as base64 encoded `username:password` string in the `Authorization` header
+  (see, now it is authorization again - HTTP Standards 😁). Sender and Reciever
+  agree on `username` and `password` which are kept secret. These credentials are
+  sent along with every request and **do not change** with each request.
 - [**HMAC Authorization**](https://en.wikipedia.org/wiki/HMAC): HMAC stands for
-**H**ashed **M**essage **A**uthentication **C**ode. The basic idea is simple -
+  **H**ashed **M**essage **A**uthentication **C**ode. The basic idea is simple -
+
 1. take the message and a shared secret, 2. concatenate them, 3. take the hash
-of it and send it along with the message. The receiver with the knowledge of
-the message and the shared secret can repeat the same computation to derive
-their own hash. If the hashes are equal, the authenticity of the message is
-established. The actual algorithm goes one step further to make the operation
-more robust. The important thing to note here is that the credential (the hash)
-**changes** with every message.
+   of it and send it along with the message. The receiver with the knowledge of
+   the message and the shared secret can repeat the same computation to derive
+   their own hash. If the hashes are equal, the authenticity of the message is
+   established. The actual algorithm goes one step further to make the operation
+   more robust. The important thing to note here is that the credential (the hash)
+   **changes** with every message.
 
 In both of the cases, it is important to keep the secrets _secret_. An
 adversary with the knowledge of secrets can forge a message without the
@@ -142,7 +143,7 @@ as the new message requires further processing. We ended up putting the
 messages in an MQ and sending a successful response immediately. The MQ
 consumer can handle the messages at its own pace without impacting the webhook.
 This also enables us to scale the webhook and the message processor
-independently. 
+independently.
 
 ### Getting rid of `groupBy` aggregations
 
@@ -209,10 +210,11 @@ design - while you can have `getRows(tableName, columns, filter)` and
 if this function is cached - we want the invalidations to be minimal (If we can
 have 3 args in an object, the concern is gone and the code becomes more
 readable too!). As an added bonus, the `invalidate` function is also type-safe
+
 - In `f(a,b,c)`, if `a ` was of type `string`, you can't pass `number` as the
-first argument to `invalidate` (expect an article on how we did this 🙂). While
-this implementation is solid and flexible, **everything comes with a tradeoff**
-and we ended up doing an O(n) `SCAN + DELETE` during invalidation.
+  first argument to `invalidate` (expect an article on how we did this 🙂). While
+  this implementation is solid and flexible, **everything comes with a tradeoff**
+  and we ended up doing an O(n) `SCAN + DELETE` during invalidation.
 
 ## 3. Going Local-First (Use your Apple Silicon!)
 
@@ -227,13 +229,13 @@ backup, it takes time and is hard to keep it up-to-date. Here is a solution
 that I came up with at my workplace:
 
 - Running low coupled dependencies using `docker-compose` - We run Redis,
-Memcached, RabbitMQ and sometimes Postgres as well
+  Memcached, RabbitMQ and sometimes Postgres as well
 - Tunnelling some dependencies using `ssh` - assuming the dependencies are
-accessible in a VM, and you can access the VM `remoteVm`, it is easy to tunnel
-the connection to your local machine - `ssh -N -L
+  accessible in a VM, and you can access the VM `remoteVm`, it is easy to tunnel
+  the connection to your local machine - `ssh -N -L
 localPort:remoteHost:remotePort localPort2:remoteHost2:remotePort2 remoteVm`
-(Thanks to a colleague for pointing this out!). We forwarded Postgres most of
-the time, along with the HashiCorp Consul for remote service discovery.
+  (Thanks to a colleague for pointing this out!). We forwarded Postgres most of
+  the time, along with the HashiCorp Consul for remote service discovery.
 
 This was an easy setup and we wrapped it in a NodeJS script (we could've done
 it in `bash`, but I couldn't give up `await Promise.all()` to run processes in
@@ -248,9 +250,9 @@ utilities in it. New NodeJS projects were on the horizon where these utilities
 could be obviously useful. Here we hit a branching in the path, we could either
 
 - Publish utils as a NodeJS package to a package registry and use it in other
-packages, or
+  packages, or
 - Have utils as a package in a monorepo and use it in other packages in the
-same monorepo.
+  same monorepo.
 
 Both of the options have pros and cons - as any other options in tech do.
 Publishing a package needs its own CI, and comes with versioning nightmares if
@@ -319,7 +321,7 @@ of the target APIs, their requirements and the constraints. Shopify shines in
 this aspect here by providing excellent developer docs at
 [shopify.dev](https://shopify.dev). Their GraphQL playgrounds are also
 excellent and help test things out before actually coding them. So, it was an
-absolutely seamless experience. 
+absolutely seamless experience.
 
 ### The Tech Stack
 
@@ -355,7 +357,7 @@ JSON, sad to the ones who count code lines as metrics) and using
 typegen. They provide a `gql` function to begin with (this is a normal
 function, not a tagged-template literal function with the same name - it was
 one of the confusing points) and the typegen looks for the named queries and
-mutations being passed into it to generate the types (being *named* is an
+mutations being passed into it to generate the types (being _named_ is an
 important point here). This makes the call sites type-safe by providing type
 information for the variables and return types. We made type generation run
 along with the dev server and the build script, along with making generated
@@ -376,11 +378,11 @@ Fortunately, we managed to bypass the rate-limiting by using Shopify's [Bulk
 APIs](https://shopify.dev/docs/api/usage/bulk-operations/queries), which
 execute a given query and notifies us with the export of the data once the
 execution is complete. On some other occasion, we managed to look up the data
-from within our own database instead of calling Shopify APIs. 
+from within our own database instead of calling Shopify APIs.
 
-I think the moral of the story is that being lazy (*read: thinking out of the
-box*) helps to expand the horizon of possible solutions, which might be more
-plausible and cost-effective sometimes.  We could have built a perfect
+I think the moral of the story is that being lazy (_read: thinking out of the
+box_) helps to expand the horizon of possible solutions, which might be more
+plausible and cost-effective sometimes. We could have built a perfect
 rate-limiting solution, but it could have taken a few weeks in development and
 testing and would have required some maintenance due to an edge case no one had
 imagined.
@@ -400,8 +402,8 @@ level.
 We made sure that a user can not land in an invalid state by making sure that:
 
 - executing routing logic at the top level `loader` - if a user enters a URL
-corresponding to a not-yet-accessible state, the loader will just redirect them
-back to the state they are in. 
+  corresponding to a not-yet-accessible state, the loader will just redirect them
+  back to the state they are in.
 - not to include `<Link/>`s for these states anywhere.
 
 After all the measures in place, we could not solve the back-button problem,
@@ -423,10 +425,9 @@ the React router `action` as soon as the user entered the page using the
 
 - Enter a mutex and execute the following operation
   - If we have the key in the DB, we do not proceed to create and just return
-the key
+    the key
   - If we don't have the key, call the API and store its key in the DB and
-return it
-
+    return it
 
 The Mutex is the key here preventing multiple external API calls from
 happening. We can use Postgres'
@@ -437,13 +438,13 @@ implement a distributed Mutex.
 ### Overall Result
 
 The project is live at Shopify Marketplace with a few dozen happy customers -
-[apps.shopify.com/truefit]( https://apps.shopify.com/truefit) (This is the only
+[apps.shopify.com/truefit](https://apps.shopify.com/truefit) (This is the only
 place I brag about my workplace in this article). The project was an
 accelerated idea to prototype to production. While the acceleration provided us
 with a lot of ideas and opportunities, it also left a few blind spots only to
 be uncovered by the users using it. We have since maintained a log of the
 issues and a disaster management & recovery plan. After a few months, the
-project is in a stable landscape now. 
+project is in a stable landscape now.
 
 ## 7. Murphy's Law
 
@@ -451,7 +452,7 @@ I got introduced to [Murphy's
 Law](https://en.wikipedia.org/wiki/Murphy%27s_law) by a colleague, of which one
 version states as:
 
-> Anything that can go wrong will go wrong, and at the worst possible time 
+> Anything that can go wrong will go wrong, and at the worst possible time
 
 This is especially true in Software Engineering and UI design where we make a
 lot of assumptions about the system that we are building and the users using
@@ -461,10 +462,10 @@ system, we might get hit with an unexpected downtime that breaks our system and
 assumptions. Over time, I've learnt to handle such situations by:
 
 1. Not making too many assumptions about the system, but ensuring we do not
-over-engineer anything. *We can't live without assumptions about the world that
-we live in*
+   over-engineer anything. _We can't live without assumptions about the world that
+   we live in_
 2. Handling the errors reactively by patching the system, while ensuring the
-patch does not introduce additional assumptions or break the system in any way
+   patch does not introduce additional assumptions or break the system in any way
 
 We have experienced lots of such situations reinforcing our disaster management
 strategies - who wants to be woken up from sleep just to execute one command to
@@ -501,6 +502,7 @@ responses. In Manifest V3, it is not there anymore and is replaced by
 extension to peek into the request (privacy-preserving....Google....)
 
 ###
+
 [`scripting`](https://developer.chrome.com/docs/extensions/reference/api/scripting)
 API
 
@@ -508,7 +510,7 @@ We used `chrome.scripting.executeScript` to execute our code and get the result
 back in the Popup surface. However, soon, it was painful for us to write
 `document.getElementById("result")!.innerHTML = JSON.stringify(result)` where
 we used to write it declaratively in React. Fortunately, Bun eliminates the
-need for build tools and bundlers -  we can use  `tsx` files to write React
+need for build tools and bundlers - we can use `tsx` files to write React
 code and compile them into JavaScript using `bun build` (We need to install
 `react` and `react-dom` though). Then, all the things were easy - we ran
 `executeScript` inside an `useEffect`, and stored the result in a state, which
@@ -516,6 +518,7 @@ is used to render the result. Thanks to React, we can bring fancy JSON Viewers
 into the mix.
 
 ###
+
 [`declarativeNetRequest`](https://developer.chrome.com/docs/extensions/reference/api/declarativeNetRequest)
 API
 
@@ -552,6 +555,7 @@ standardized. During the course of this year, I used several Web Standard APIs
 to achieve few tasks at work. Here is a summary of them:
 
 ###
+
 [`navigator.sendBeacon()`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon)
 
 The [`fetch`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API
@@ -581,11 +585,12 @@ chain would be returned as a `400 BadRequest`.
 
 > ✨ While I was writing this article, I learnt that `fetch` with [`keepalive:
 true`](https://developer.mozilla.org/en-US/docs/Web/API/fetch#keepalive) would
-achieve the same effect as `navigator.sendBeacon()`! It would allow us to
-specify `mode: "no-cors"` to send the data and not to be aware of the response,
-which is fine in some cases.
+> achieve the same effect as `navigator.sendBeacon()`! It would allow us to
+> specify `mode: "no-cors"` to send the data and not to be aware of the response,
+> which is fine in some cases.
 
 ###
+
 [`MutationObserver`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
 
 One of our tasks during the data collection script is to observe changes to the
@@ -603,6 +608,7 @@ our selector. We carefully decide whether to execute the callback or not
 through a series of short-circuit conditions to exit as early as possible.
 
 ### [`Vary`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Vary)
+
 header and Caches
 
 When I was writing a proxy to patch the existing script to add our injection on
@@ -623,6 +629,7 @@ based on which response varies. In our example, Cache can store different
 entities for plaintext and gzip response if `Vary: Accept-Encoding`.
 
 ###
+
 [`Referer`](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referer)
 based policies
 
@@ -630,10 +637,10 @@ When we want to customize the script by the website it loaded from, we can
 follow a few strategies:
 
 - Generate a query parameter unique for each website and ask them to include it
-in the `script src`. However, this does not prevent another party from using
-the same query parameter if they know its value :sweat_smile:
+  in the `script src`. However, this does not prevent another party from using
+  the same query parameter if they know its value :sweat_smile:
 - Derive the information about where the script was loaded from the request
-itself - The `Referer` header comes into play here
+  itself - The `Referer` header comes into play here
 
 While we can inspect `Referer` header from the request and customize the
 response based on it, some user agents can skip sending this header due to
@@ -671,9 +678,9 @@ Bloom Filter the question of whether we have seen a particular element or not,
 and its response has the following characteristics:
 
 - When it says **no**, we can be **100% sure** that we have not seen the
-element yet
+  element yet
 - When it says **yes**, it can be **wrong with a probability `p`**, which can
-be pre-configured
+  be pre-configured
 
 It made sense for our use-case to lose a few elements at the cost of seeing
 them the next day, as we rotate bloom filters every day. We used [Redis
@@ -691,8 +698,9 @@ at work, GPT-4 Turbo is doing absolute wonders with added capabilities of
 browsing and code execution. In my experience, ChatGPT can automate trivial and
 boring tasks - I asked ChatGPT to browse `declarativeNetRequest` docs and come
 up with the JSON rules satisfying our use-case, although I had to tweak a
-little bit later. **I follow a rule where I never submit any PII to the ChatGPT
-- not even the name of my workplace.**
+little bit later. \*\*I follow a rule where I never submit any PII to the ChatGPT
+
+- not even the name of my workplace.\*\*
 
 ### Choosing the Right tool for the Right Problem
 
@@ -702,7 +710,7 @@ Question Answer models by feeding them the HTML content of the website and
 asking them questions about size options - they were slow and inaccurate, and
 might've needed fine-tuning - we did not pursue that way further. ChatGPT and
 other LLMs were good at this, but sometimes hallucinated and were slow and
-costly - it was like *using an axe to kill a fly*. We turned out to simple
+costly - it was like _using an axe to kill a fly_. We turned out to simple
 embedding models as our last resort.
 
 ### Data Matters
@@ -715,7 +723,7 @@ the dataset now, a few tokens did not make any sense based on our domain
 knowledge, which originated from garbage data. We ended up joining a meeting,
 going through these tokens and manually deleting the tokens which did not make
 sense, sometimes double-checking to understand where they originated from. At
-the end of this 1-hour-ish exercise, we had gold clean data! 
+the end of this 1-hour-ish exercise, we had gold clean data!
 
 ### FastText - So Fast, So Huge!
 
@@ -743,7 +751,6 @@ nearest neighbour search (no fancy VectorDB yet, sorry folks!). Then, for every
 input token, we pass it through the model, take the embedding and check if we
 have a nearest neighbour to it in our dataset within a predefined distance. If
 we find that neighbour, we accept that the token is valid, otherwise reject it.
-
 
 We hosted a [`flask`](https://flask.palletsprojects.com/en/3.0.x/) server to
 execute this logic and made our JS call the endpoints defined in the server.
@@ -790,7 +797,7 @@ chart](https://github.com/redis-stack/helm-redis-stack) on our GKE cluster to
 move ahead with the MVP. We have to figure out monitoring and scaling parts. I
 was impressed by the `PersistentVolumeClaim` handled by GKE seamlessly.
 
-### BigQuery - *Big Query*
+### BigQuery - _Big Query_
 
 [BigQuery](https://cloud.google.com/bigquery) is GCP's Data Warehouse solution
 where the storage and computing are horizontally scaled across their clusters.
@@ -802,16 +809,17 @@ keep the costs predictable.
 The only query interface to the BigQuery is SQL Query in Google SQL syntax.
 While SQL is declarative, I observed queries tend to grow big especially if we
 have to do data deduplication and joins. The query lives true to its name -
-*Big Query*.
+_Big Query_.
 
 One of the nice features of BigQuery is that we can route the application logs
 to a dataset with minimal configuration with the help of Log Sink. The Log Sink
 creates its own dataset and tables with the schema to match the log schema and
 takes care of synchronizing the tables with the logs. We use this in all places
+
 - just log to `stdout` using a structured logger such as
-[`pino`](https://github.com/pinojs/pino), and rest assured that this data ends
-in BigQuery. I would imagine using [`fluent-bit`](https://fluentbit.io/) and
-its transport to achieve a similar solution for more customizability.
+  [`pino`](https://github.com/pinojs/pino), and rest assured that this data ends
+  in BigQuery. I would imagine using [`fluent-bit`](https://fluentbit.io/) and
+  its transport to achieve a similar solution for more customizability.
 
 Often, we need to process this log data, aggregate it and write it to a
 destination table. While Scheduled Queries can help us achieve this
@@ -854,13 +862,13 @@ Personally I tend towards [Pulumi](https://www.pulumi.com/), due to following
 reasons:
 
 - Enables to **write a clear and concise code** following the language's best
-practices
+  practices
 - Enables to **adapt the language ecosystem** of the language to do hard
-computation - such as diving the IP into subnetworks and calculating the masks
+  computation - such as diving the IP into subnetworks and calculating the masks
 - Enables to adapt the standards of the language w.r.t **modules and
-code-reusability**. I can think of an infra monorepo with `pnpm`
+  code-reusability**. I can think of an infra monorepo with `pnpm`
 - Enables to **provision** a set of resources (stack) **dynamically based on an
-API call!** This is a real killer if your use case demands this functionality
+  API call!** This is a real killer if your use case demands this functionality
 
 All in all, it is important to understand the chain events to lead to the
 current state in a workplace, and adapt to it. Of course, HCL is not bad and is
@@ -883,7 +891,7 @@ tightly tied to a git repository, we chose FluxCD. We now have a flux
 repository** containing configs and [`kustomization`](https://kustomize.io/)
 overlays for all our applications across the environments. The `CODEOWNERS`
 file ensures that no one is privileged to deploy to prod without code approvals
-while giving enough freedom to deploy in lower environments. 
+while giving enough freedom to deploy in lower environments.
 
 We now have to create a branch, do a commit, merge and forget way of deploying
 our software with Flux taking care of everything else. We had a Flux issue one
@@ -905,5 +913,6 @@ work we do, and how we help people (This was brag-ish, not completely though!).
 
 This is my first time writing a summary of the year. This writing process
 helped me to reflect on this year and celebrate the learnings and achievements
+
 - I think this is important to keep you motivated to keep on doing great things
-year-long. 
+  year-long.

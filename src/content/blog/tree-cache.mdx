@@ -20,12 +20,12 @@ implementation of the cache that abstracted the underlying data store. We had
 the following goals in mind when starting to build a cache:
 
 - **Ergonomic:** The cache should be easy to use, with minimal changes to
-existing code base
+  existing code base
 - **Performant:** The cache operations should not slow down the system
 - **Easy to Invalidate:** The cache should support easy partial/full
-invalidations that can be triggered by the application
+  invalidations that can be triggered by the application
 - **Type Safe:** The cache API along with the invalidation API should be type
-safe in TypeScript.
+  safe in TypeScript.
 
 We had built an in-memory cache earlier as it was easy to implement (you know?
 software developers are lazy...) But we soon ran into inconsistency problems
@@ -69,14 +69,14 @@ We outsource the responsibility of storage, distribution and fault tolerance to
 Redis. We store the cached values in the plain key value space of Redis. We
 derive the key by concatenating unique ID of the function with the JSON
 representation of the arguments. We store the resulting value as a JSON as
-well. 
+well.
 
 > This adds a serious limitation to the functions that we can cache, for their
-arguments to be serializable and deserializable. Since our function arguments
-are plain values and objects at the most, this is not a problem for us. 
+> arguments to be serializable and deserializable. Since our function arguments
+> are plain values and objects at the most, this is not a problem for us.
 >
 > Whenever the situation demanded us to cache a non-serializable value, we
-ended up using in-memory cache without any distribution.
+> ended up using in-memory cache without any distribution.
 
 The key implementation detail comes in how we want to define the cache key. For
 example, we can do
@@ -85,11 +85,11 @@ example, we can do
 const getCacheKey = (...args: any[]) => JSON.stringify(args)
 ```
 
-or, 
+or,
 
 ```typescript
-const getCacheKey = (...args: any[]) => args.map(arg =>
-JSON.stringify(arg)).join("/")
+const getCacheKey = (...args: any[]) =>
+  args.map((arg) => JSON.stringify(arg)).join("/")
 ```
 
 While both ways can derive a valid string key, the latter preserves the
@@ -114,8 +114,8 @@ invalidate the cache.
 ## Invalidation
 
 > There are only [two hard
-things](https://martinfowler.com/bliki/TwoHardThings.html) in Computer Science:
-cache invalidation and naming things.
+> things](https://martinfowler.com/bliki/TwoHardThings.html) in Computer Science:
+> cache invalidation and naming things.
 >
 > -- Phil Karlton
 
@@ -140,12 +140,12 @@ to make this function type-safe? For our example function `getStudentInfo`, the
 
 - `invalidate()` - Invalidates all entries in the cache
 - `invalidate(university: string)` - Invalidates all entries beginning with
-`university`
+  `university`
 - `invalidate(university: string, year: number)` - Invalidates all entries
-beginning with `university` and `year`
+  beginning with `university` and `year`
 - `invalidate(university: string, year: number, course: string)` - Invalidates
-a specific entry that has the values matching all of  `university`, `year` and
-`course: string`
+  a specific entry that has the values matching all of `university`, `year` and
+  `course: string`
 
 Fortunately, TS has a `Parameters<T extends Function>` type helper can get us
 half way there - Given a function type `T`, it returns its parameter types as
@@ -181,13 +181,13 @@ type Result = Prefixes<['a', 'b', 'c', 'd']>
 ```
 
 With the `Prefixes` in our hand, we can now define our `cached` function
-completely, using in memory storage.	
+completely, using in memory storage.
 
 ```typescript
 const cached = <T extends Cacheable>(f: T) => {
   const cache: Record<string, any> = {}
   const getKey = (args: any[]) =>
-    args.map((arg) => JSON.stringify(arg)).join('/')
+    args.map((arg) => JSON.stringify(arg)).join("/")
 
   const wrapped = (async (...args: Parameters<T>) => {
     const key = getKey(args)
@@ -226,17 +226,17 @@ absurd! At the end, we ended up naming it `cacheFactory` - albeit it was a
 `Factory`!
 
 > Naming things has an impact on code readability and ease of debugging. Naming
-Higher Order Function is more hard. Few days back, I was finding a bug during
-data processing where a validation was failing for some data. After the
-validation, the data was supposed to be processed and ingested.
+> Higher Order Function is more hard. Few days back, I was finding a bug during
+> data processing where a validation was failing for some data. After the
+> validation, the data was supposed to be processed and ingested.
 >
 > When I was going throgh the code (written by me, btw), I found the calls to
-`validate` and `process` were in sequence, and the way our systems worked, all
-calls to `validate` should have been failed; but mysteriously, some records
-were passing.
+> `validate` and `process` were in sequence, and the way our systems worked, all
+> calls to `validate` should have been failed; but mysteriously, some records
+> were passing.
 >
 > At the end, It turned out to be `validate` and `process` were Higher Order
-Functions which returned the functions for validation and processing
-respectively. If we knew this earlier, we could have saved around 1 day of
-speculation why the bug was there at all. And we learnt a less to name things
-properly (yeah, we know that is hard) to help our future selves.
+> Functions which returned the functions for validation and processing
+> respectively. If we knew this earlier, we could have saved around 1 day of
+> speculation why the bug was there at all. And we learnt a less to name things
+> properly (yeah, we know that is hard) to help our future selves.
