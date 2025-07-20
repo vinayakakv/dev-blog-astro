@@ -430,6 +430,16 @@ code .line::before {
 }
 
 @media (max-width: 760px) {
+  h1 {
+    font-size: 2.56rem;
+  } /* 20 % smaller */
+  h2 {
+    font-size: 1.76rem;
+  }
+  h3 {
+    font-size: 1.36rem;
+  }
+
   body {
     width: 84%;
     padding-left: 8%;
