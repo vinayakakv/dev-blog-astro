@@ -33,7 +33,7 @@ export default defineConfig({
   site: "https://example.com",
   integrations: [mdx(), sitemap()],
   markdown: {
-    remarkPlugins: [insertLeadingH2, [sectionizeHeadings, { levels: [2] }]],
+    remarkPlugins: [insertLeadingH2, sectionizeHeadings],
     extendDefaultPlugins: true,
   },
 })
