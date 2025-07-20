@@ -3,6 +3,8 @@ import { defineConfig } from "astro/config"
 import mdx from "@astrojs/mdx"
 import sitemap from "@astrojs/sitemap"
 import sectionizeHeadings from "@mdxvac/remark-sectionize-headings"
+import remarkMath from "remark-math"
+import rehypeKatex from "rehype-katex"
 
 // /plugins/remarkInsertLeadingH2.js
 function insertLeadingH2(text = "") {
@@ -33,10 +35,12 @@ export default defineConfig({
   site: "https://example.com",
   integrations: [mdx(), sitemap()],
   markdown: {
-    remarkPlugins: [insertLeadingH2, sectionizeHeadings],
+    remarkPlugins: [insertLeadingH2, sectionizeHeadings, remarkMath],
+    rehypePlugins: [rehypeKatex],
     extendDefaultPlugins: true,
     syntaxHighlight: "shiki",
     shikiConfig: {
+      wrap: true,
       theme: "ayu-dark",
     },
   },
