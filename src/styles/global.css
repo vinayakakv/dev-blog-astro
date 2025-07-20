@@ -356,9 +356,13 @@ h3 > code {
   font-size: 1rem;
 }
 
+pre:has(code) {
+  width: 52.5%;
+  padding: 1rem;
+}
+
 pre > code {
   font-size: 0.9rem;
-  width: 52.5%;
   margin-left: 2.5%;
   overflow-x: auto;
   display: block;
@@ -406,6 +410,25 @@ label.margin-toggle:not(.sidenote-number) {
   height: 100%;
 }
 
+code {
+  word-wrap: break-word;
+}
+
+code {
+  counter-reset: step;
+  counter-increment: step 0;
+}
+
+code .line::before {
+  content: counter(step);
+  counter-increment: step;
+  width: 1rem;
+  margin-right: 1.5rem;
+  display: inline-block;
+  text-align: right;
+  color: rgba(115, 138, 148, 0.4);
+}
+
 @media (max-width: 760px) {
   body {
     width: 84%;
@@ -420,7 +443,7 @@ label.margin-toggle:not(.sidenote-number) {
     width: 100%;
   }
 
-  pre > code {
+  pre:has(code) {
     width: 97%;
   }
 

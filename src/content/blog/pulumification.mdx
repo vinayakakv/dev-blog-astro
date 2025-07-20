@@ -66,24 +66,14 @@ code as:
 
 ```typescript
 type User = {
-  is_admin: boolean,
+  is_admin: boolean
 }
 
-let users: Map<string, User> = {} // The value is coming from somewhere, say a
-config or input
+let users: Map<string, User> = {} // The value is coming from somewhere, say a config or input
 
-let admin_users = new Map(
-  [...users].filter(
-    ([name, user]) => user.is_admin
-  )
-)
+let admin_users = new Map([...users].filter(([name, user]) => user.is_admin))
 
-let regular_users = new Map(
-  [...users].filter(
-    ([name, user]) => !user.is_admin
-  )
-)
-
+let regular_users = new Map([...users].filter(([name, user]) => !user.is_admin))
 ```
 
 While anyone comfortable with JavaScript or TypeScript can understand the below

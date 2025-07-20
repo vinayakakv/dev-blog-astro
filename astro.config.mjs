@@ -35,5 +35,9 @@ export default defineConfig({
   markdown: {
     remarkPlugins: [insertLeadingH2, sectionizeHeadings],
     extendDefaultPlugins: true,
+    syntaxHighlight: "shiki",
+    shikiConfig: {
+      theme: "ayu-dark",
+    },
   },
 })
