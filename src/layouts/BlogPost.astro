@@ -17,20 +17,18 @@ const { title, description, date } = Astro.props
 
   <body>
     <Header />
-    <main>
-      <article>
-        <div class="prose">
-          <div class="title">
-            <div class="date">
-              <FormattedDate date={date} />
-            </div>
-            <h1>{title}</h1>
-            <hr />
-          </div>
-          <slot />
+
+    <article>
+      <div class="title">
+        <div class="date">
+          <FormattedDate date={date} />
         </div>
-      </article>
-    </main>
+        <h1>{title}</h1>
+        <hr />
+      </div>
+      <slot />
+    </article>
+
     <Footer />
   </body>
 </html>
