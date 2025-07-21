@@ -80,7 +80,6 @@ body {
   width: 87.5%;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 12.5%;
   font-family:
     et-book, Palatino, "Palatino Linotype", "Palatino LT STD", "Book Antiqua",
     Georgia, serif;
@@ -216,7 +215,8 @@ blockquote footer {
 
 section > p,
 section > footer,
-section > table {
+section > table,
+section > span.katex-display {
   width: 55%;
 }
 
@@ -439,7 +439,7 @@ code .line::before {
     font-size: 1.36rem;
   }
 
-  body {
+  body > *:not(header) {
     width: 84%;
     padding-left: 8%;
     padding-right: 8%;

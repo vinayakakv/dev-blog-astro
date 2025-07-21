@@ -3,13 +3,37 @@ import HeaderLink from "./HeaderLink.astro"
 import { SITE_TITLE } from "../consts"
 ---
 
+<style>
+  nav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    padding: 0.5rem;
+    background: inherit;
+    max-width: inherit;
+    border-bottom: 1px solid black;
+    isolation: isolate;
+    z-index: 1;
+  }
+  ul {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+</style>
+
 <header>
   <nav>
     <h2><a href="/">{SITE_TITLE}</a></h2>
-    <div class="internal-links">
+    <ul class="internal-links">
       <HeaderLink href="/">Home</HeaderLink>
       <HeaderLink href="/blog">Blog</HeaderLink>
       <HeaderLink href="/about">About</HeaderLink>
-    </div>
+    </ul>
   </nav>
 </header>
