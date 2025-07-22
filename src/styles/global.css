@@ -425,7 +425,7 @@ code .line::before {
   margin-right: 1.5rem;
   display: inline-block;
   text-align: right;
-  color: rgba(115, 138, 148, 0.4);
+  color: rgba(255, 255, 255, 0.483);
 }
 
 @media (max-width: 760px) {
