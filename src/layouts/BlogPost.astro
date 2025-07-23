@@ -4,31 +4,48 @@ import BaseHead from "../components/BaseHead.astro"
 import Header from "../components/Header.astro"
 import Footer from "../components/Footer.astro"
 import FormattedDate from "../components/FormattedDate.astro"
+import { Markdown } from "astro-remote"
 
 type Props = CollectionEntry<"blog">["data"]
 
-const { title, description, date } = Astro.props
+const { title, description, date, tldr } = Astro.props
 ---
 
 <html lang="en">
   <head>
     <BaseHead title={title} description={description} />
-  </head>
+    <style>
+      .subtitle {
+        display: flex;
+        flex-direction: row;
+        font-size: 1.2rem;
+        gap: 2rem;
+        padding: 1rem 0;
+      }
+    </style></head
+  >
 
   <body>
     <Header />
 
     <article>
-      <div class="title">
-        <div class="date">
-          <FormattedDate date={date} />
-        </div>
+      <section class="title">
         <h1>{title}</h1>
-        <hr />
-      </div>
-      <slot />
-    </article>
+        <h2>{description}</h2>
+        <div class="subtitle">
+          <FormattedDate date={date} />
+          <a href="#tldr" id="#top">TL;DR</a>
+        </div>
 
+        <hr />
+      </section>
+      <slot />
+      <section id="tldr">
+        <h2>TL;DR</h2>
+        <Markdown content={tldr} />
+        <a href="#top">Back to Top</a>
+      </section>
+    </article>
     <Footer />
   </body>
 </html>

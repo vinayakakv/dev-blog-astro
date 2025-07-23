@@ -74,6 +74,7 @@
 /* Tufte CSS styles */
 html {
   font-size: 15px;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -216,7 +217,9 @@ blockquote footer {
 section > p,
 section > footer,
 section > table,
-section > span.katex-display {
+section > span.katex-display,
+section > h1,
+section > h2 {
   width: 55%;
 }
 
