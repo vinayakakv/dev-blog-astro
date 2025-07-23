@@ -27,7 +27,7 @@ Time moves so fast; it feels like it has been just days since I wrote [2023 in R
 
 Search is a ubiquitous experience that spans across our daily lives. With the touch of conversational AIs, we can make search more personalized and accessible, with the LLM acting as an empathetic guide to the topics we are searching for. Using a combination of image and text embedding models, Vector DB, and rank fusion techniques, we built a conversational search experience. The details can be found in the article linked below:
 
-<BlogCard slug="hybrid-search" title="Hybrid Search" />
+<a href="/blog/hybrid-serch">Hybrid Search</a>
 
 ## 2. MQ Shenanigans
 
@@ -35,7 +35,7 @@ We have a high-traffic service in production to monitor real-time changes on pro
 
 Debugging this issue was a fun experience, and I wrote more about it in a separate article:
 
-<BlogCard slug="1342177289" title="1342177289" />
+<a href="/blog/1342177289">1342177289</a>
 
 In the end, we had to switch to [rabbitmq/client](https://www.npmjs.com/package/rabbitmq-client), which implemented automatic retries and provided a useful abstraction. With that library, our server code looks more organized than ever — `publisher.ts`, `consumer.ts`, `init.ts`, `cleanup.ts`, `server.ts`, and so on! Additionally, the [@cloudamqp/amqp-client](https://www.npmjs.com/package/@cloudamqp/amqp-client) fixed [the issue](https://github.com/cloudamqp/amqp-client.js/pull/123)!
 
@@ -63,10 +63,9 @@ One of the strengths of ScyllaDB’s architecture is its fault tolerance. During
 
 There are many ways to deploy an application and manage its lifecycle — some managed by cloud providers, some abstracted by Kubernetes, and others entirely managed by internal tools. I worked with a set of internal tools written in Bash to migrate applications managed by them to Kubernetes. What started as a simple set of scripts to automate deployments had evolved into a massive codebase, for which Bash was far from ideal. I detailed this experience in the article below:
 
-<BlogCard
-  slug="you-have-built-kubernetes-sir"
-  title="Dear Sir, You Have Built Kubernetes"
-/>
+<a href="/blog/you-have-built-kubernetes-sir">
+  Dear Sir, You Have Built Kubernetes
+</a>
 
 ## 5. Data Normalization Using LLMs
 
@@ -82,7 +81,7 @@ We had a consumer-facing microservice that also handled some background tasks. W
 
 While GKE [suggests](https://cloud.google.com/kubernetes-engine/docs/troubleshooting/load-balancing#500-series-errors) adding a sleep before termination, we opted to split the microservice to separately handle consumer-facing UIs and background tasks, using a single flag to manage the configuration. You can read more about this approach in the article below:
 
-<BlogCard slug="splitting-microservice" title="Splitting Microservice" />
+<a href="/blog/splitting-microservice">Splitting Microservice</a>
 
 ## 7. Tree Cache
 
@@ -92,7 +91,7 @@ Should we invalidate all the cache entries for this function? While this approac
 
 The article below dives deep into these challenges and presents a solution:
 
-<BlogCard slug="tree-cache" title="Tree Cache" />
+<a href="/blog/tree-cache">Tree Cache</a>
 
 ## 8. Tensor Math in JS
 
@@ -104,7 +103,7 @@ That said, the field of machine learning seems to lag behind in this regard. Whi
 
 Fortunately, TensorFlow's JavaScript wrapper, [`tensorflow.js`](https://www.tensorflow.org/js), provides mathematical and neural network operations, offering a glimpse of hope for this gap. However, the absence of operator overloading in JavaScript introduces unique and interesting patterns in code, which I discussed in detail in the article below:
 
-<BlogCard slug="operator-overloaded" title="Operators Overloaded" />
+<a href="/blog/operator-overloaded">Operators Overloaded</a>
 
 ## 9. Akshara Tools
 
@@ -123,7 +122,7 @@ We have grown accustomed to cloud-based experiences that make our lives easier. 
 
 Recently, I explored self-hosting my photo library using [Immich](https://immich.app/). I delve deeper into this experience in the article below:
 
-<BlogCard slug="self-hosting-with-pi" title="Self-Hosting with Pi" />
+<a href="/blog/self-hosting-with-pi">Self-Hosting with Pi</a>
 
 ## 11. Year of AI
 
