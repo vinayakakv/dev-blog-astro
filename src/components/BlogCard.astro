@@ -1,0 +1,30 @@
+---
+import type { CollectionEntry } from "astro:content"
+import FormattedDate from "./FormattedDate.astro"
+
+type Props = { post: CollectionEntry<"blog"> }
+
+const { post } = Astro.props
+---
+
+<style>
+  a {
+    text-decoration: none;
+  }
+  .card {
+    border: 1px dashed;
+    padding: 0 1rem;
+  }
+  .date {
+    font-size: 1rem;
+  }
+</style>
+<div class="card">
+  <a href={`/blog/${post.id}/`}>
+    <h2 class="title">{post.data.title}</h2>
+    <p class="date">
+      <FormattedDate date={post.data.date} />
+    </p>
+    <p>{post.data.description}</p>
+  </a>
+</div>
