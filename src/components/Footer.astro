@@ -2,17 +2,33 @@
 const today = new Date()
 ---
 
+<style>
+  .social-links {
+    display: flex;
+    gap: 2rem;
+    margin-top: 0.5rem;
+  }
+</style>
+
 <footer>
-  &copy; 2022 - {today.getFullYear()} Vinayaka K V. All rights reserved.
+  <span
+    >&copy; 2022 - {today.getFullYear()} Vinayaka K V. All rights reserved.</span
+  >
   <div class="social-links">
-    <a href="https://m.webtoo.ls/@astro" target="_blank">
-      <span class="sr-only">Follow Astro on Mastodon</span>
+    <a href="https://linkedin.com/in/vinayakakv" target="_blank">
+      <span>LinkedIn</span>
     </a>
-    <a href="https://twitter.com/astrodotbuild" target="_blank">
-      <span class="sr-only">Follow Astro on Twitter</span>
+    <a href="https://github.com/vinayakakv" target="_blank">
+      <span>Github</span>
     </a>
-    <a href="https://github.com/withastro/astro" target="_blank">
-      <span class="sr-only">Go to Astro's GitHub repo</span>
+    <a href="mailto:me.vinayakakv@gmail.com" target="_blank">
+      <span>Mail</span>
+    </a>
+    <a
+      href="https://github.com/vinayakakv/resume/releases/latest/download/resume.pdf"
+      target="_blank"
+    >
+      <span>Résumé</span>
     </a>
   </div>
 </footer>
