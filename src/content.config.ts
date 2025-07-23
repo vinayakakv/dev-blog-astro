@@ -1,5 +1,5 @@
 import { glob } from "astro/loaders"
-import { defineCollection, z } from "astro:content"
+import { defineCollection, getCollection, z } from "astro:content"
 
 const blog = defineCollection({
   // Load Markdown and MDX files in the `src/content/blog/` directory.
@@ -10,7 +10,13 @@ const blog = defineCollection({
     description: z.string(),
     date: z.coerce.date(),
     tldr: z.string(),
+    draft: z.boolean().default(false),
   }),
 })
+
+export const getPosts = async () =>
+  (await getCollection("blog")).filter((post) =>
+    import.meta.env.PROD ? !post.data.draft : true,
+  )
 
 export const collections = { blog }
