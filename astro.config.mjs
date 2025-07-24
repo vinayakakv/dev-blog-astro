@@ -5,6 +5,7 @@ import sitemap from "@astrojs/sitemap"
 import sectionizeHeadings from "@mdxvac/remark-sectionize-headings"
 import remarkMath from "remark-math"
 import rehypeKatex from "rehype-katex"
+import inspectUrls from "@jsdevtools/rehype-url-inspector"
 
 // ChatGPT-generated
 function insertLeadingH2(text = "") {
@@ -36,7 +37,19 @@ export default defineConfig({
   integrations: [mdx(), sitemap()],
   markdown: {
     remarkPlugins: [insertLeadingH2, sectionizeHeadings, remarkMath],
-    rehypePlugins: [rehypeKatex],
+    rehypePlugins: [
+      rehypeKatex,
+      // https://peoray.dev/blog/astro-open-link-new-tab
+      [
+        inspectUrls,
+        {
+          selectors: ["a[href]"],
+          inspectEach(url) {
+            url.node.properties.target = "_blank"
+          },
+        },
+      ],
+    ],
     extendDefaultPlugins: true,
     syntaxHighlight: "shiki",
     shikiConfig: {
