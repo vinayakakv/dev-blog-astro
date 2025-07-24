@@ -33,7 +33,7 @@ function insertLeadingH2(text = "") {
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://example.com",
+  site: "https://vinayakakv.com",
   integrations: [mdx(), sitemap()],
   markdown: {
     remarkPlugins: [insertLeadingH2, sectionizeHeadings, remarkMath],
