@@ -450,6 +450,8 @@ code .line::before {
   section > p,
   section > footer,
   section > table,
+  section > h2,
+  section > h1,
   section > span.katex-display {
     width: 100%;
   }
