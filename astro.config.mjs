@@ -6,7 +6,7 @@ import sectionizeHeadings from "@mdxvac/remark-sectionize-headings"
 import remarkMath from "remark-math"
 import rehypeKatex from "rehype-katex"
 
-// /plugins/remarkInsertLeadingH2.js
+// ChatGPT-generated
 function insertLeadingH2(text = "") {
   return (tree) => {
     const children = tree.children
