@@ -15,7 +15,10 @@ const posts = (await getPosts()).sort(
 <style>
   .card-wrapper {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(clamp(30ch, 50%, 50ch), 1fr)
+    );
     gap: 1rem;
   }
 </style>

@@ -444,8 +444,6 @@ code .line::before {
 
   body > *:not(header) {
     width: 84%;
-    padding-left: 8%;
-    padding-right: 8%;
   }
 
   hr,
