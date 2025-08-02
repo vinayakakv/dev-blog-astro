@@ -54,7 +54,7 @@ export default defineConfig({
     syntaxHighlight: "shiki",
     shikiConfig: {
       wrap: true,
-      theme: "ayu-dark",
+      theme: "github-dark-default",
     },
   },
 })
